@@ -115,11 +115,11 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
         return new DeviceProjectInfoResponse
         {
             Name = projectName,
-            ActualEntries = entry.Select(e => new DeviceProjectEntryInfo
+            ActualEntries = entry.Where(e => e.IsActual).Select(e => new DeviceProjectEntryInfo
             {
                 Id = e.Id,
                 Version = e.Version,
-                Images = e.Images?.Select(i => new DeviceImageInfoResponse
+                Images = e.Images?.Where(i => i.IsActive).Select(i => new DeviceImageInfoResponse
                 {
                     Id = i.Id,
                     Tag = i.ImageTag

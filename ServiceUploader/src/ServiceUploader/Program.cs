@@ -166,7 +166,7 @@ internal class Program
         };
         Uri path = new(uri);
         Console.WriteLine($"Send image info to {path}");
-        using VersioningManagerClient client = new(path, token, TimeSpan.FromMinutes(1.5));
+        using VersioningManagerClient client = new(path, token, TimeSpan.FromMinutes(10.0));
         await client.UploadImageAsync(model);
         Console.WriteLine("Done!");
     }
@@ -179,7 +179,7 @@ internal class Program
             throw new ArgumentException("Value cannot be null or whitespace.", nameof(project));
         Uri url = new(uri);
         Console.WriteLine($"Start saving process of project {project} from {uri}...");
-        using VersioningManagerClient client = new(url, token, TimeSpan.FromMinutes(1.5));
+        using VersioningManagerClient client = new(url, token, TimeSpan.FromMinutes(10.0));
         DeviceProjectInfoResponse info = await client.GetProjectInfoAsync(project);
         Console.WriteLine($"Get project info {info.Name} with actual members count {info.ActualEntries.Count()}");
         if (!info.ActualEntries.Any())
@@ -211,7 +211,7 @@ internal class Program
             }
             Console.WriteLine($"Downloading image {image.Tag}...");
             await using Stream stream = await client.GetImageAsync(image.Id);
-            await using FileStream fs = File.Create(filePath);
+            await using FileStream fs = File.OpenWrite(filePath);
             await stream.CopyToAsync(fs);
             Console.WriteLine($"Save image to {filePath}");
         }

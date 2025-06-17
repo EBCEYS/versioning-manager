@@ -7,6 +7,6 @@ public static class StringExtensions
 {
     public static string ToHash(this string str)
     {
-        return Convert.ToBase64String(MD5.HashData(Encoding.UTF8.GetBytes(str))).ToUpperInvariant();
+        return Convert.ToHexStringLower(MD5.HashData(Encoding.UTF8.GetBytes(str)));
     }
 }

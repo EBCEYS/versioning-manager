@@ -20,7 +20,7 @@ jobs:
     
     - name: Get version
       id: get_version
-      run: echo "version=$(grep '<Version>' ${{ env.VER_MANAGER_DIR }}/versioning-manager-api.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')" >> $GITHUB_OUTPUT
+      run: pwd && ls && echo "version=$(grep '<Version>' ${{ env.VER_MANAGER_DIR }}/versioning-manager-api.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')" >> $GITHUB_OUTPUT
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
@@ -34,8 +34,8 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
-        context: ${{ env.VER_MANAGER_DIR }}
-        file: ./Dockerfile
+        context: ${{ env.VER_MANAGER_DIR }}/
+        file: ${{ env.VER_MANAGER_DIR }}/Dockerfile
         push: true
         tags: |
           ${{ env.DOCKER_IMAGE }}:latest

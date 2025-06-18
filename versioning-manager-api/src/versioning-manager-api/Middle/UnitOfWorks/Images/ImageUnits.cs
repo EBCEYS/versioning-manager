@@ -57,8 +57,9 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
         {
             return OperationResult.NotFound;
         }
-        
-        IEnumerable<DbImageInfo> imagesFromService = await db.Images.Where(i => i.ProjectId == entry.Id && i.ServiceName == model.ServiceName).ToListAsync(token);
+
+        IEnumerable<DbImageInfo> imagesFromService = await db.Images
+            .Where(i => i.ProjectId == entry.Id && i.ServiceName == model.ServiceName).ToListAsync(token);
         foreach (DbImageInfo imageInfo in imagesFromService)
         {
             imageInfo.IsActive = false;
@@ -108,18 +109,18 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
         CancellationToken token = default)
     {
         List<DbProjectEntry> entry = await db.ProjectEntries
-            .Include(e => e.Project)
-            .Include(e => e.Images)
+            .Include(e => e.Project.Name)
+            .Include(e => e.Images.Where(i => i.IsActive))
             .AsNoTracking()
             .Where(e => e.Project.Name == projectName.ToLowerInvariant() && e.IsActual).ToListAsync(token);
         return new DeviceProjectInfoResponse
         {
             Name = projectName,
-            ActualEntries = entry.Where(e => e.IsActual).Select(e => new DeviceProjectEntryInfo
+            ActualEntries = entry.Select(e => new DeviceProjectEntryInfo
             {
                 Id = e.Id,
                 Version = e.Version,
-                Images = e.Images?.Where(i => i.IsActive).Select(i => new DeviceImageInfoResponse
+                Images = e.Images?.Select(i => new DeviceImageInfoResponse
                 {
                     Id = i.Id,
                     Tag = i.ImageTag
@@ -141,11 +142,6 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
             .AsNoTracking()
             .Where(i => i.ProjectId == projectEntryId && i.Project.IsActual && i.IsActive)
             .ToListAsync(token);
-        if (images.Count > 0)
-        {
-            return composeHelper.GetTotalCompose(images.Select(i => i.DockerCompose));
-        }
-
-        return null;
+        return images.Count > 0 ? composeHelper.GetTotalCompose(images.Select(i => i.DockerCompose)) : null;
     }
 }

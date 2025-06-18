@@ -158,8 +158,8 @@ namespace versioning_manager_api.DevDatabase
         public DateTimeOffset LastUpdateUTC { get; set; }
         [Column("is_actual")]
         public bool IsActual { get; set; }
-        
-        public ICollection<DbImageInfo>? Images { get; set; }
+
+        public ICollection<DbImageInfo> Images { get; set; } = [];
     }
 
     [Table("images", Schema = DbSchemas.ProjectSchemas)]

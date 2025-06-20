@@ -113,7 +113,7 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
         CancellationToken token = default)
     {
         List<DbProjectEntry> entry = await db.ProjectEntries
-            .Include(e => e.Project.Name)
+            .Include(e => e.Project)
             .Include(e => e.Images.Where(i => i.IsActive))
             .AsNoTracking()
             .Where(e => e.Project.Name == projectName.ToLowerInvariant() && e.IsActual).ToListAsync(token);

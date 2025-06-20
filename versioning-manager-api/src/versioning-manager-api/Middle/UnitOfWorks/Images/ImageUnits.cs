@@ -28,7 +28,11 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
             return null;
         }
 
-        await docker.PullImageFromGitlabAsync(image.ImageTag, token);
+        if (!await docker.IsImageExistsAsync(image.ImageTag, token))
+        {
+            await docker.PullImageFromGitlabAsync(image.ImageTag, token);
+        }
+
         return await docker.GetImageFileAsync(image.ImageTag, token);
     }
 

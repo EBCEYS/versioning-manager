@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Http.Extensions;
+using ServiceUploader.Extensions;
 using ServiceUploader.Models;
 
 namespace ServiceUploader.Middle;
@@ -31,7 +32,7 @@ internal class VersioningManagerClient : IDisposable
         }
     }
 
-    public async Task<Stream> GetImageAsync(int id)
+    public async Task<HttpContent> GetImageAsync(int id)
     {
         Uri url = new(baseUri, "version-manager/api/project/image/file");
         QueryBuilder qBuilder = new() { { "id", id.ToString() } };
@@ -39,13 +40,27 @@ internal class VersioningManagerClient : IDisposable
         {
             Query = qBuilder.ToQueryString().ToString()
         };
-        HttpResponseMessage response = await client.GetAsync(builder.ToString());
+        HttpResponseMessage response =
+            await client.GetAsync(builder.ToString(), HttpCompletionOption.ResponseHeadersRead);
         if (response.IsSuccessStatusCode)
         {
-            return await response.Content.ReadAsStreamAsync();
+            return response.Content;
         }
 
         throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+    }
+
+    public async Task DownloadImageAsync(int id, string destinationPath, Action<long, double> progressCallback,
+        Action<long, double> finishCallback)
+    {
+        Uri url = new(baseUri, "version-manager/api/project/image/file");
+        QueryBuilder qBuilder = new() { { "id", id.ToString() } };
+        UriBuilder builder = new(url)
+        {
+            Query = qBuilder.ToQueryString().ToString()
+        };
+        await client.DownloadFileAsync(builder.Uri, destinationPath, progressCallback, finishCallback,
+            TimeSpan.FromSeconds(1));
     }
 
     public async Task<DeviceProjectInfoResponse> GetProjectInfoAsync(string projectName)
@@ -70,6 +85,7 @@ internal class VersioningManagerClient : IDisposable
         {
             return await response.Content.ReadAsStreamAsync();
         }
+
         throw new HttpRequestException(await response.Content.ReadAsStringAsync());
     }
 

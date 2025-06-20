@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Docker.DotNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 using versioning_manager_api.Attributes;
 using versioning_manager_api.Exceptions;
 using versioning_manager_api.Middle.UnitOfWorks.Images;

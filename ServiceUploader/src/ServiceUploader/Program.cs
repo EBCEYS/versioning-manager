@@ -15,7 +15,7 @@ internal class Program
     {
         return $"If not specified, environment variable '{envKey}' will be used.";
     }
-    
+
     private static string ModeDescription { get; } = "The mode used to start application\n" +
                                                      $"{Modes.Load} - loads image info to server.\n" +
                                                      "Options:\n" +
@@ -116,6 +116,7 @@ internal class Program
                         {
                             throw new InvalidOperationException("The token used to start application");
                         }
+
                         await Load(uri, token, image, project, service, version, compose);
                         break;
                     case Modes.Save:
@@ -123,6 +124,7 @@ internal class Program
                         {
                             throw new InvalidOperationException("The token used to start application");
                         }
+
                         await Save(uri, token, project);
                         break;
                     case Modes.Update:
@@ -200,7 +202,7 @@ internal class Program
         string projPath = Path.Combine(Directory.GetCurrentDirectory(), project, entry.Version);
 
         Directory.CreateDirectory(projPath);
-        
+
         foreach (DeviceImageInfoResponse image in entry.Images)
         {
             string filePath = Path.Combine(projPath, $"{image.Tag.ToHash()}.tar");
@@ -209,11 +211,22 @@ internal class Program
                 Console.WriteLine("Image already exists. Go next...");
                 continue;
             }
+
             Console.WriteLine($"Downloading image {image.Tag}...");
-            await using Stream stream = await client.GetImageAsync(image.Id);
-            await using FileStream fs = File.OpenWrite(filePath);
-            await stream.CopyToAsync(fs);
-            Console.WriteLine($"Save image to {filePath}");
+            await client.DownloadImageAsync(image.Id, filePath, (totalRead, currentSpeed) =>
+            {
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.Write(
+                    $"Progress: {FormatBytes(totalRead)} Speed: {currentSpeed:0.00} MB/s");
+            }, (totalBytes, totalSeconds) =>
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.SetCursorPosition(0, Console.CursorTop);
+                Console.WriteLine($"Downloaded: {FormatBytes(totalBytes)} in " +
+                                  $"{totalSeconds:0.00} seconds. " +
+                                  $"Avg speed: {totalBytes / (totalSeconds * 1024 * 1024):0.00} MB/s");
+                Console.ResetColor();
+            });
         }
 
         try
@@ -231,6 +244,42 @@ internal class Program
         }
 
         Console.WriteLine("Done!");
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] sizes = ["B", "KB", "MB", "GB"];
+        int order = 0;
+        double len = bytes;
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private static async Task CopyWithProgress(Stream source, Stream destination, int bufferSize,
+        Action<double> progressCallback, CancellationToken token = default)
+    {
+        double totalRead = 0L;
+        byte[] buffer = new byte[bufferSize];
+
+        do
+        {
+            int read = await source.ReadAsync(buffer, token);
+            if (read == 0)
+            {
+                break;
+            }
+
+            await destination.WriteAsync(buffer.AsMemory(0, read), token);
+
+            totalRead += Convert.ToDouble(read);
+
+            progressCallback(totalRead);
+        } while (!token.IsCancellationRequested);
     }
 
     private static T SelectOne<T>(IEnumerable<T> vals)
@@ -269,10 +318,11 @@ internal class Program
         {
             Console.WriteLine($"Uploading archive '{archive}'...");
             await using FileStream fs = File.OpenRead(archive);
-            await client.Images.LoadImageAsync(new ImageLoadParameters(), fs, new Progress<JSONMessage>(
-                msg => { Console.WriteLine($"{msg.Status}: {msg.ProgressMessage}"); }));
+            await client.Images.LoadImageAsync(new ImageLoadParameters(), fs,
+                new Progress<JSONMessage>(msg => { Console.WriteLine($"{msg.Status}: {msg.ProgressMessage}"); }));
             Console.WriteLine($"Image '{archive}' uploaded successfully.");
         }
+
         Console.WriteLine("Done!");
     }
 }

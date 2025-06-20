@@ -68,6 +68,29 @@ public class DockerController : IHostedService
     }
 
     /// <summary>
+    /// Check image exists in local docker images storage.
+    /// </summary>
+    /// <param name="imageName">The image name.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns><c>true</c> if image exists; otherwise <c>false</c>.</returns>
+    public async Task<bool> IsImageExistsAsync(string imageName, CancellationToken token = default)
+    {
+        try
+        {
+            await client.Images.InspectImageAsync(imageName, token);
+            return true;
+        }
+        catch (DockerImageNotFoundException)
+        {
+            return false;
+        }
+        catch (DockerApiException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Gets the image as file.
     /// </summary>
     /// <param name="imageName">The image tag.</param>
@@ -104,6 +127,7 @@ public class DockerController : IHostedService
         }, token);
     }
 }
+
 /// <summary>
 /// The docker controller <see cref="IServiceCollection"/> exntensions.
 /// </summary>

@@ -28,7 +28,7 @@ jobs:
         run: ${{ env.SERV_UPLOADER_SRC_DIR }}/build-deb.sh
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: deb-package
           path: ${{ env.SERV_UPLOADER_SRC_DIR }}/*.deb
@@ -39,7 +39,7 @@ jobs:
     
     steps:
     - name: Download artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: deb-package
 

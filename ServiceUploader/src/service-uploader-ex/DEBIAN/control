@@ -1,0 +1,4 @@
+Package: service-uploader
+Architecture: amd64
+Maintainer: EBCEYS
+Description: The service uploader for versioning manager.

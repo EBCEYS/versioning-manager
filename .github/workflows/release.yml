@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+    
+env:
+  SERV_UPLOADER_SRC_DIR: ./ServiceUploader/src
+    
+jobs:
+  
+  build-package:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev
+
+      - name: Build app and deb package
+        run: ${{ env.SERV_UPLOADER_SRC_DIR }}/build-deb.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: deb-package
+          path: ${{ env.SERV_UPLOADER_SRC_DIR }}/*.deb
+          
+  release:
+    needs: build-package
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: deb-package
+
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "*.deb"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

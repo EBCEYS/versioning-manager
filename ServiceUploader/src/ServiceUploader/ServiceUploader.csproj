@@ -8,6 +8,7 @@
         <PublishAot>false</PublishAot>
         <InvariantGlobalization>true</InvariantGlobalization>
         <Version>1.1.0</Version>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
@@ -15,6 +16,12 @@
       <PackageReference Include="EBCEYS.ContainersEnvironment" Version="0.0.8" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0" />
       <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
     </ItemGroup>
 
 </Project>

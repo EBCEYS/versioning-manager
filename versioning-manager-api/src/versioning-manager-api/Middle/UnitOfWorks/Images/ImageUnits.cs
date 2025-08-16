@@ -9,24 +9,21 @@ using versioning_manager_api.SystemObjects;
 namespace versioning_manager_api.Middle.UnitOfWorks.Images;
 
 /// <summary>
-/// The image units.
+///     The image units.
 /// </summary>
 /// <param name="db">The database context.</param>
 public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerComposeHelper composeHelper)
 {
     /// <summary>
-    /// Gets the image file.
+    ///     Gets the image file.
     /// </summary>
     /// <param name="id">The image id.</param>
     /// <param name="token">The cancellation token.</param>
-    /// <returns><see cref="Stream"/> with image tar archive if exists; otherwise <c>null</c>.</returns>
+    /// <returns><see cref="Stream" /> with image tar archive if exists; otherwise <c>null</c>.</returns>
     public async Task<Stream?> GetImageFileAsync(int id, CancellationToken token = default)
     {
         DbImageInfo? image = await db.Images.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id, token);
-        if (image == null)
-        {
-            return null;
-        }
+        if (image == null) return null;
 
         await docker.PullImageFromGitlabAsync(image.ImageTag, token);
 
@@ -34,7 +31,7 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
     }
 
     /// <summary>
-    /// Uploads the image info to database.
+    ///     Uploads the image info to database.
     /// </summary>
     /// <param name="model">The model.</param>
     /// <param name="creatorId">The creator id.</param>
@@ -44,27 +41,18 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
         CancellationToken token = default)
     {
         DbDevice? device = await db.Devices.FirstOrDefaultAsync(d => d.Id == creatorId, token);
-        if (device == null)
-        {
-            return OperationResult.Failure;
-        }
+        if (device == null) return OperationResult.Failure;
 
         DbProject? project =
             await db.Projects.Include(p => p.Entries)
                 .FirstOrDefaultAsync(p => p.Name == model.ProjectName.ToLowerInvariant(), token);
 
         DbProjectEntry? entry = project?.Entries?.FirstOrDefault(e => e.IsActual);
-        if (entry == null)
-        {
-            return OperationResult.NotFound;
-        }
+        if (entry == null) return OperationResult.NotFound;
 
         IEnumerable<DbImageInfo> imagesFromService = await db.Images
             .Where(i => i.ProjectId == entry.Id && i.ServiceName == model.ServiceName).ToListAsync(token);
-        foreach (DbImageInfo imageInfo in imagesFromService)
-        {
-            imageInfo.IsActive = false;
-        }
+        foreach (DbImageInfo imageInfo in imagesFromService) imageInfo.IsActive = false;
 
         DbImageInfo? image =
             imagesFromService.FirstOrDefault(i => i.ImageTag == model.ImageTag);
@@ -101,7 +89,7 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
     }
 
     /// <summary>
-    /// Gets the project info for device.
+    ///     Gets the project info for device.
     /// </summary>
     /// <param name="projectName">The project name.</param>
     /// <param name="token">The cancellation token.</param>
@@ -131,11 +119,11 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
     }
 
     /// <summary>
-    /// Gets the project docker-compose file.
+    ///     Gets the project docker-compose file.
     /// </summary>
     /// <param name="projectEntryId">The project entry id.</param>
     /// <param name="token">The cancellation token.</param>
-    /// <returns><see cref="Stream"/> of docker-compose file if project entry exists; otherwise <c>null</c>.</returns>
+    /// <returns><see cref="Stream" /> of docker-compose file if project entry exists; otherwise <c>null</c>.</returns>
     public async Task<Stream?> GetProjectDockerComposeAsync(int projectEntryId, CancellationToken token = default)
     {
         List<DbImageInfo> images = await db.Images

@@ -3,7 +3,7 @@ using versioning_manager_api.DevDatabase;
 namespace versioning_manager_api.Models.Responses.Projects;
 
 /// <summary>
-/// The image info api response.
+///     The image info api response.
 /// </summary>
 /// <param name="id">The image id.</param>
 /// <param name="service">The service name.</param>
@@ -20,42 +20,42 @@ public class ImageInfoResponse(
     DateTimeOffset creationUtc)
 {
     /// <summary>
-    /// The id.
+    ///     The id.
     /// </summary>
     public int Id { get; } = id;
 
     /// <summary>
-    /// The service name.
+    ///     The service name.
     /// </summary>
     public string ServiceName { get; } = service;
 
     /// <summary>
-    /// The version.
+    ///     The version.
     /// </summary>
     public string Version { get; } = version;
 
     /// <summary>
-    /// The tag.
+    ///     The tag.
     /// </summary>
     public string Tag { get; } = tag;
 
     /// <summary>
-    /// The creator.
+    ///     The creator.
     /// </summary>
     public Guid Creator { get; } = creator;
 
     /// <summary>
-    /// Is active.
+    ///     Is active.
     /// </summary>
     public bool IsActive { get; } = isActive;
 
     /// <summary>
-    /// Creation UTC.
+    ///     Creation UTC.
     /// </summary>
     public DateTimeOffset CreationUtc { get; } = creationUtc;
 
     /// <summary>
-    /// Creates an instance of <see cref="ImageInfoResponse"/> from <see cref="DbImageInfo"/>.
+    ///     Creates an instance of <see cref="ImageInfoResponse" /> from <see cref="DbImageInfo" />.
     /// </summary>
     /// <param name="dbImageInfo">The database image info.</param>
     /// <returns></returns>

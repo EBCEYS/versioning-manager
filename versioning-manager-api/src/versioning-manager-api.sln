@@ -12,6 +12,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.UnitTests", "versioning-manager-api.UnitTests\versioning-manager-api.UnitTests.csproj", "{770ADE5C-CA8F-47EA-924D-563717E0AF9C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.Client", "versioning-manager-api.Client\versioning-manager-api.Client.csproj", "{A3653990-5B5A-495E-99C3-AC82B7293842}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.Routes", "versioning-manager-api.Routes\versioning-manager-api.Routes.csproj", "{531076FF-07D5-4D29-869B-43F864E334AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,5 +33,13 @@ Global
 		{770ADE5C-CA8F-47EA-924D-563717E0AF9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{770ADE5C-CA8F-47EA-924D-563717E0AF9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{770ADE5C-CA8F-47EA-924D-563717E0AF9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3653990-5B5A-495E-99C3-AC82B7293842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3653990-5B5A-495E-99C3-AC82B7293842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3653990-5B5A-495E-99C3-AC82B7293842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3653990-5B5A-495E-99C3-AC82B7293842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{531076FF-07D5-4D29-869B-43F864E334AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{531076FF-07D5-4D29-869B-43F864E334AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{531076FF-07D5-4D29-869B-43F864E334AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{531076FF-07D5-4D29-869B-43F864E334AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

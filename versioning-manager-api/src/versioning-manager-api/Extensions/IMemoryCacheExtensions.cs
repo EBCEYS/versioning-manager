@@ -6,10 +6,7 @@ public static class MemoryCacheExtensions
 {
     public static T Set<T>(this IMemoryCache cache, string key, T value, TimeSpan? timeToLive)
     {
-        if (timeToLive == null)
-        {
-            return cache.Set(key, value);
-        }
+        if (timeToLive == null) return cache.Set(key, value);
 
         return cache.Set(key, value, new MemoryCacheEntryOptions
         {

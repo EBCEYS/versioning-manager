@@ -14,15 +14,12 @@ public class UserUnits(VmDatabaseContext db)
         IHashHelper hasher, CancellationToken token = default)
     {
         string username = model.Username.ToLowerInvariant();
-        DbUser? user = await db.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken: token);
-        if (user != null)
-        {
-            return OperationResult<DbUser>.ConflictResult(null);
-        }
+        DbUser? user = await db.Users.FirstOrDefaultAsync(u => u.Username == username, token);
+        if (user != null) return OperationResult<DbUser>.ConflictResult(null);
 
         string? roleName = model.Role?.ToLowerInvariant();
         DbRole? role = roleName != null
-            ? await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, cancellationToken: token)
+            ? await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, token)
             : null;
 
         string salt = hasher.GenerateSalt();
@@ -47,11 +44,8 @@ public class UserUnits(VmDatabaseContext db)
     {
         string username = model.Username.ToLowerInvariant();
         DbUser? user = await db.Users.Include(u => u.Role).AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, cancellationToken: token);
-        if (user == null)
-        {
-            return OperationResult<DbUser?>.NotFoundResult(null);
-        }
+            .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, token);
+        if (user == null) return OperationResult<DbUser?>.NotFoundResult(null);
 
         string hashedPassword = hasher.Hash(model.Password, user.Salt);
         return user.Password == hashedPassword
@@ -63,10 +57,7 @@ public class UserUnits(VmDatabaseContext db)
     {
         string roleName = model.Name.ToLowerInvariant();
         DbRole? role = await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, token);
-        if (role != null)
-        {
-            return OperationResult<DbRole>.ConflictResult(null);
-        }
+        if (role != null) return OperationResult<DbRole>.ConflictResult(null);
 
         role = new DbRole
         {
@@ -79,19 +70,15 @@ public class UserUnits(VmDatabaseContext db)
         return OperationResult<DbRole>.SuccessResult(role);
     }
 
-    public async Task<OperationResult<object>> ChangePasswordAsync(string username, ChangePasswordModel model, IHashHelper hasher, CancellationToken token = default)
+    public async Task<OperationResult<object>> ChangePasswordAsync(string username, ChangePasswordModel model,
+        IHashHelper hasher, CancellationToken token = default)
     {
         username = username.ToLowerInvariant();
         DbUser? user = await db.Users.FirstOrDefaultAsync(u => u.Username == username, token);
-        if (user == null)
-        {
-            return OperationResult<object>.NotFoundResult(null);
-        }
+        if (user == null) return OperationResult<object>.NotFoundResult(null);
 
         if (user.Password != hasher.Hash(model.CurrentPassword, user.Salt))
-        {
             return OperationResult<object>.FailureResult(null);
-        }
 
         user.Password = hasher.Hash(model.NewPassword, user.Salt);
         user.LastUpdateUtc = DateTimeOffset.UtcNow;
@@ -116,7 +103,8 @@ public class UserUnits(VmDatabaseContext db)
         CancellationToken token = default)
     {
         roleName = roleName.ToLowerInvariant();
-        int count = await db.Roles.Where(r => r.Name == roleName).ExecuteUpdateAsync(sp => sp.SetProperty(r => r.Roles, newRoles), token);
+        int count = await db.Roles.Where(r => r.Name == roleName)
+            .ExecuteUpdateAsync(sp => sp.SetProperty(r => r.Roles, newRoles), token);
         return count > 0 ? OperationResult.Success : OperationResult.NotFound;
     }
 
@@ -128,25 +116,20 @@ public class UserUnits(VmDatabaseContext db)
         DbUser? user =
             await db.Users.FirstOrDefaultAsync(
                 u => u.Username == username, token);
-        if (user == null)
-        {
-            return OperationResult.NotFound;
-        }
+        if (user == null) return OperationResult.NotFound;
 
         DbRole? role =
             await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName,
                 token);
-        if (role == null)
-        {
-            return OperationResult.NotFound;
-        }
+        if (role == null) return OperationResult.NotFound;
 
         user.Role = role;
         user.LastUpdateUtc = DateTimeOffset.UtcNow;
         return OperationResult.Success;
     }
 
-    public async Task<OperationResult> UpdateUserIsActiveAsync(string username, bool isActive, CancellationToken token = default)
+    public async Task<OperationResult> UpdateUserIsActiveAsync(string username, bool isActive,
+        CancellationToken token = default)
     {
         username = username.ToLowerInvariant();
         int count = await db.Users.Where(u => u.Username == username)

@@ -1,23 +1,26 @@
 using versioning_manager_api.DevDatabase;
+
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace versioning_manager_api.Models.Responses.Users;
 
 /// <summary>
-/// The user info response api model.
+///     The user info response api model.
 /// </summary>
 public class UserInfoResponseModel
 {
     /// <summary>
-    /// The username.
+    ///     The username.
     /// </summary>
     public required string Username { get; init; }
+
     /// <summary>
-    /// The user activity status.
+    ///     The user activity status.
     /// </summary>
     public required bool IsActive { get; init; }
+
     /// <summary>
-    /// The role name.
+    ///     The role name.
     /// </summary>
     public string? RoleName { get; init; }
 

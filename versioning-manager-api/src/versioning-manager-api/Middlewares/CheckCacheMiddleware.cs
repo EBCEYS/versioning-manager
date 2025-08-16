@@ -12,12 +12,14 @@ public class CheckCacheMiddleware : IMiddleware
         {
             string? username = ctx.User.GetUserName();
             string? sessionId = ctx.User.GetSessionId();
-            if (username == null || sessionId == null || !ctx.RequestServices.GetRequiredService<IMemoryCache>().TryGetValue<TokenResponseModel>(sessionId, out _))
+            if (username == null || sessionId == null || !ctx.RequestServices.GetRequiredService<IMemoryCache>()
+                    .TryGetValue<TokenResponseModel>(sessionId, out _))
             {
                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
         }
+
         await next.Invoke(ctx);
     }
 }

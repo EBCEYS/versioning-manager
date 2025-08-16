@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
@@ -17,8 +16,8 @@ public interface ICryptHelper
 
 public class CryptHelper : ICryptHelper
 {
-    private readonly byte[] key;
     private readonly byte[] iv;
+    private readonly byte[] key;
     private readonly string prefix;
 
     public CryptHelper(IOptions<ApiKeyOptions> opts)
@@ -27,10 +26,9 @@ public class CryptHelper : ICryptHelper
         iv = File.ReadAllBytes(opts.Value.CryptIVFilePath)[..16];
         prefix = opts.Value.Prefix;
     }
-    
+
     public string Encrypt(string text)
     {
-        
         using Aes aes = Aes.Create();
         aes.Key = key;
         aes.IV = iv;
@@ -47,10 +45,7 @@ public class CryptHelper : ICryptHelper
 
     public string? Decrypt(string text)
     {
-        if (!text.StartsWith(prefix))
-        {
-            return null;
-        }
+        if (!text.StartsWith(prefix)) return null;
         using Aes aes = Aes.Create();
         aes.Key = key;
         aes.IV = iv;

@@ -4,27 +4,29 @@ using System.Text.Json.Serialization;
 namespace versioning_manager_api.SystemObjects;
 
 /// <summary>
-/// The apikey entity.
+///     The apikey entity.
 /// </summary>
 public class ApiKeyEntity
 {
-    [JsonIgnore]
-    private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
+    [JsonIgnore] private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
+
     /// <summary>
-    /// The source.
+    ///     The source.
     /// </summary>
     public required string Source { get; init; }
+
     /// <summary>
-    /// The key expire datetime UTC.
+    ///     The key expire datetime UTC.
     /// </summary>
     public DateTimeOffset ExpiresUtc { get; init; }
+
     /// <summary>
-    /// The device id.
+    ///     The device id.
     /// </summary>
     public Guid DeviceId { get; init; }
 
     /// <summary>
-    /// Serialize object to json.
+    ///     Serialize object to json.
     /// </summary>
     /// <returns>The json string.</returns>
     public string ToJson()
@@ -33,11 +35,12 @@ public class ApiKeyEntity
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="ApiKeyEntity"/> from <paramref name="json"/>.
+    ///     Creates a new instance of <see cref="ApiKeyEntity" /> from <paramref name="json" />.
     /// </summary>
     /// <param name="json">The json string.</param>
-    /// <returns>A new instance of <see cref="ApiKeyEntity"/> created from <paramref name="json"/>.<br/>
-    /// <c>null</c> if caught any errors while deserializing.
+    /// <returns>
+    ///     A new instance of <see cref="ApiKeyEntity" /> created from <paramref name="json" />.<br />
+    ///     <c>null</c> if caught any errors while deserializing.
     /// </returns>
     public static ApiKeyEntity? FromJson(string? json)
     {
@@ -50,6 +53,5 @@ public class ApiKeyEntity
         {
             return null;
         }
-        
     }
 }

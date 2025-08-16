@@ -1,14 +1,12 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using versioning_manager_api.Controllers;
 using versioning_manager_api.Exceptions;
 using versioning_manager_api.StaticStorages;
 
 namespace versioning_manager_api.Attributes;
 
 /// <summary>
-/// The requirement apikey header attribute.
+///     The requirement apikey header attribute.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
 public class RequireApiKeyAttribute : ExceptionFilterAttribute, IActionFilter
@@ -16,17 +14,15 @@ public class RequireApiKeyAttribute : ExceptionFilterAttribute, IActionFilter
     /// <inheritdoc />
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        
     }
 
     /// <inheritdoc />
     public void OnActionExecuted(ActionExecutedContext context)
     {
         Type currentController = context.Controller.GetType();
-        if (IsDefined(currentController, GetType()) && !context.HttpContext.Request.Headers.TryGetValue(ApikeyStorage.ApikeyHeader, out _))
-        {
+        if (IsDefined(currentController, GetType()) &&
+            !context.HttpContext.Request.Headers.TryGetValue(ApikeyStorage.ApikeyHeader, out _))
             throw new ApiKeyRequireException(ApikeyStorage.ApikeyHeader);
-        }
     }
 
     /// <inheritdoc />
@@ -43,7 +39,7 @@ public class RequireApiKeyAttribute : ExceptionFilterAttribute, IActionFilter
 }
 
 /// <summary>
-/// The apikey require exception response.
+///     The apikey require exception response.
 /// </summary>
 public class ApiKeyRequireExceptionResponse : ObjectResult
 {
@@ -51,6 +47,6 @@ public class ApiKeyRequireExceptionResponse : ObjectResult
     public ApiKeyRequireExceptionResponse(object? value) : base(value)
     {
         StatusCode = StatusCodes.Status403Forbidden;
-        ContentTypes = [ "application/problem+json" ];
+        ContentTypes = ["application/problem+json"];
     }
 }

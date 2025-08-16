@@ -1,0 +1,43 @@
+name: Build and Test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  VER_MANAGER_DIR: ./versioning-manager-api/src
+  SERV_UPLOADER_DIR: ./ServiceUploader/src
+
+jobs:
+  test-versioning-manager-api:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install dotnet
+      uses: setup-dotnet@v4
+      with:
+        dotnet-version: "9.0.x"
+
+    - name: Test versioning-manager-api
+      run: dotnet test ${{ env.VER_MANAGER_DIR }}
+
+  test-service-uploader:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Install dotnet
+      uses: setup-dotnet@v4
+      with:
+        dotnet-version: "9.0.x"
+
+    - name: Test ServiceUploader
+      run: dotnet test ${{ env.SERV_UPLOADER_DIR }}
+
+    

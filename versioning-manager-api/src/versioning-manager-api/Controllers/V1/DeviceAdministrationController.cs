@@ -2,15 +2,16 @@ using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Extensions;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Middle.UnitOfWorks.Devices;
+using versioning_manager_api.Models;
 using versioning_manager_api.Models.Requests.Devices;
 using versioning_manager_api.Models.Responses.Devices;
 using versioning_manager_api.Routes;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 
 namespace versioning_manager_api.Controllers.V1;
@@ -229,10 +230,10 @@ public class DeviceAdministrationController(
     [HttpDelete(ControllerRoutes.DeviceAdministrationV1Routes.DeleteDeviceRoute)]
     [Authorize(Roles = RolesStorage.DeleteDeviceRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteDeviceAsync([Required] [FromQuery] Guid id)
     {
         if (id == Guid.Empty) return Problem("Device ID is required!", GetType().Name, StatusCodes.Status400BadRequest);
@@ -257,25 +258,4 @@ public class DeviceAdministrationController(
             return InternalError();
         }
     }
-}
-
-/// <summary>
-///     The device search type.
-/// </summary>
-public enum DeviceSearchType
-{
-    /// <summary>
-    ///     Get all devices.
-    /// </summary>
-    All,
-
-    /// <summary>
-    ///     Get only active devices.
-    /// </summary>
-    Active,
-
-    /// <summary>
-    ///     Get one device.
-    /// </summary>
-    One
 }

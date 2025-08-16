@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.Docker;
 using versioning_manager_api.Middle.DockerCompose;
 using versioning_manager_api.Models.Requests.Images;

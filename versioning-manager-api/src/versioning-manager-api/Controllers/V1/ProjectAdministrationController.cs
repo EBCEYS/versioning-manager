@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Extensions;
 using versioning_manager_api.Middle.UnitOfWorks.Projects;
 using versioning_manager_api.Models.Requests.Projects;
 using versioning_manager_api.Models.Responses.Projects;
 using versioning_manager_api.Routes;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 
 namespace versioning_manager_api.Controllers.V1;

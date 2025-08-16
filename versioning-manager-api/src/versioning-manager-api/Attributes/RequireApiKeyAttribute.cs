@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using versioning_manager_api.Exceptions;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 
 namespace versioning_manager_api.Attributes;
 

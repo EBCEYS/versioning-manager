@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Middle.UnitOfWorks.Users;
 using versioning_manager_api.Models.Requests.Users;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 using versioning_manager_api.SystemObjects.Options;
 

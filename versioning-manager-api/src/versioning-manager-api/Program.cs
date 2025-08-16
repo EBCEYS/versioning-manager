@@ -3,11 +3,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using versioning_manager_api.Attributes;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.CryptsProcess;
@@ -157,12 +158,8 @@ internal class Program
         services.AddCheckCacheMiddleware();
         services.AddApiCheckMiddleware();
 
-        services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); }).AddJsonOptions(opts =>
-        {
-            opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            opts.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-            opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-        });
+        services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); })
+            .AddJsonOptions(ConfigureJsonOptions);
 
         services.AddSwaggerGen(opts =>
         {
@@ -200,13 +197,13 @@ internal class Program
 
             opts.IncludeXmlComments(Assembly.GetExecutingAssembly(), true);
         });
-        
+
         services.AddApiVersioning(options =>
         {
             options.DefaultApiVersion = new ApiVersion(1, 0);
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.ReportApiVersions = true;
-            
+
             options.ApiVersionReader = ApiVersionReader.Combine(
                 new UrlSegmentApiVersionReader()
             );
@@ -217,5 +214,39 @@ internal class Program
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.SubstituteApiVersionInUrl = true;
         });
+    }
+
+    private static void ConfigureJsonOptions(JsonOptions opts)
+    {
+        JsonSerializerOptions webOpts = JsonSerializerOptions.Web;
+        opts.AllowInputFormatterExceptionMessages = true;
+        opts.JsonSerializerOptions.AllowOutOfOrderMetadataProperties = webOpts.AllowOutOfOrderMetadataProperties;
+        opts.JsonSerializerOptions.AllowTrailingCommas = webOpts.AllowTrailingCommas;
+        foreach (JsonConverter webOptsConverter in webOpts.Converters)
+            opts.JsonSerializerOptions.Converters.Add(webOptsConverter);
+
+        opts.JsonSerializerOptions.DefaultBufferSize = webOpts.DefaultBufferSize;
+        opts.JsonSerializerOptions.DefaultIgnoreCondition = webOpts.DefaultIgnoreCondition;
+        opts.JsonSerializerOptions.DictionaryKeyPolicy = webOpts.DictionaryKeyPolicy;
+        opts.JsonSerializerOptions.Encoder = webOpts.Encoder;
+        opts.JsonSerializerOptions.IgnoreReadOnlyFields = webOpts.IgnoreReadOnlyFields;
+        opts.JsonSerializerOptions.IgnoreReadOnlyProperties = webOpts.IgnoreReadOnlyProperties;
+        opts.JsonSerializerOptions.IncludeFields = webOpts.IncludeFields;
+        opts.JsonSerializerOptions.IndentCharacter = webOpts.IndentCharacter;
+        opts.JsonSerializerOptions.IndentSize = webOpts.IndentSize;
+        opts.JsonSerializerOptions.MaxDepth = webOpts.MaxDepth;
+        opts.JsonSerializerOptions.NewLine = webOpts.NewLine;
+        opts.JsonSerializerOptions.NumberHandling = webOpts.NumberHandling;
+        opts.JsonSerializerOptions.PreferredObjectCreationHandling = webOpts.PreferredObjectCreationHandling;
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = webOpts.PropertyNameCaseInsensitive;
+        opts.JsonSerializerOptions.PropertyNamingPolicy = webOpts.PropertyNamingPolicy;
+        opts.JsonSerializerOptions.ReadCommentHandling = webOpts.ReadCommentHandling;
+        opts.JsonSerializerOptions.ReferenceHandler = webOpts.ReferenceHandler;
+        opts.JsonSerializerOptions.RespectNullableAnnotations = webOpts.RespectNullableAnnotations;
+        opts.JsonSerializerOptions.RespectRequiredConstructorParameters = webOpts.RespectRequiredConstructorParameters;
+        opts.JsonSerializerOptions.TypeInfoResolver = webOpts.TypeInfoResolver;
+        opts.JsonSerializerOptions.UnknownTypeHandling = webOpts.UnknownTypeHandling;
+        opts.JsonSerializerOptions.UnmappedMemberHandling = webOpts.UnmappedMemberHandling;
+        opts.JsonSerializerOptions.WriteIndented = webOpts.WriteIndented;
     }
 }

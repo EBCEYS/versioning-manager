@@ -1,0 +1,56 @@
+using System.Text.Json;
+using Flurl;
+using Flurl.Http;
+using Microsoft.AspNetCore.Mvc;
+using versioning_manager_api.Client.Interfaces;
+using versioning_manager_api.Models.Requests.Images;
+using versioning_manager_api.Models.Responses.Images;
+using versioning_manager_api.Routes;
+using versioning_manager_api.Routes.StaticStorages;
+
+namespace versioning_manager_api.Client.Services;
+
+internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : ClientBase(
+    new FlurlClient(serverAddress.AppendPathSegments(ControllerRoutes.ProjectV1Routes.GetBaseRoute())),
+    timeout ?? TimeSpan.FromSeconds(120), JsonSerializerOptions.Web), IProjectClientV1
+{
+    public async Task<DeviceProjectInfoResponse> GetProjectInfoAsync(string projectName, string apiKey,
+        CancellationToken token = default)
+    {
+        return await GetJsonAsync<DeviceProjectInfoResponse, ProblemDetails>(url =>
+                url.AppendPathSegments(ControllerRoutes.ProjectV1Routes.GetProjectInfoRouteWith(projectName)),
+            GetHeaders(apiKey),
+            token);
+    }
+
+    public async Task<Stream> DownloadImageAsync(int imageId, string apiKey, CancellationToken token = default)
+    {
+        return await GetStreamAsync<ProblemDetails>(
+            url => url.AppendPathSegment(ControllerRoutes.ProjectV1Routes.DownloadImageRoute)
+                .AppendQueryParam("id", imageId), GetHeaders(apiKey), token);
+    }
+
+    public async Task PostImageInfoAsync(UploadImageInfoModel imageInfo, string apiKey,
+        CancellationToken token = default)
+    {
+        await PostJsonAsync<UploadImageInfoModel, object, ProblemDetails>(
+            url => url.AppendPathSegment(ControllerRoutes.ProjectV1Routes.PostImageInfoRoute), imageInfo,
+            GetHeaders(apiKey),
+            token);
+    }
+
+    public async Task<Stream> GetDockerComposeFileAsync(int entryId, string apiKey, CancellationToken token = default)
+    {
+        return await GetStreamAsync<ProblemDetails>(
+            url => url.AppendPathSegment(ControllerRoutes.ProjectV1Routes.GetProjectComposeFileRouteWith(entryId)),
+            GetHeaders(apiKey), token);
+    }
+
+    private static Dictionary<string, object> GetHeaders(string apiKey)
+    {
+        return new Dictionary<string, object>(GetDefaultHeaders())
+        {
+            { ApikeyStorage.ApikeyHeader, apiKey }
+        };
+    }
+}

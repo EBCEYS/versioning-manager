@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 
 namespace versioning_manager_api.SystemObjects.Options;
 

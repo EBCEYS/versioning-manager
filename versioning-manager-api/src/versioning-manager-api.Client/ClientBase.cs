@@ -7,6 +7,8 @@ namespace versioning_manager_api.Client;
 
 internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout, JsonSerializerOptions jsonOptions)
 {
+    private const string AuthorizationHeader = "Authorization";
+    private const string AuthorizationSchema = "Bearer";
     private const string UnsuccessStatusCodeExceptionMessage = "Unsuccess status code!";
     private const string IncorrectParsingExceptionMessage = "Incorrect response parsing!";
 
@@ -216,8 +218,16 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         }
     }
 
-    private static Dictionary<string, object> GetDefaultHeaders()
+    protected static Dictionary<string, object> GetDefaultHeaders()
     {
         return new Dictionary<string, object>();
+    }
+
+    protected static Dictionary<string, object> GetJwtHeaders(string jwt)
+    {
+        return new Dictionary<string, object>(GetDefaultHeaders())
+        {
+            { AuthorizationHeader, $"{AuthorizationSchema} {jwt}" }
+        };
     }
 }

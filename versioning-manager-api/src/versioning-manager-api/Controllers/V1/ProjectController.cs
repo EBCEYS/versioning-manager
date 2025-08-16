@@ -9,7 +9,7 @@ using versioning_manager_api.Middle.UnitOfWorks.Images;
 using versioning_manager_api.Models.Requests.Images;
 using versioning_manager_api.Models.Responses.Images;
 using versioning_manager_api.Routes;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 
 namespace versioning_manager_api.Controllers.V1;

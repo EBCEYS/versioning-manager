@@ -16,6 +16,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.Clie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.Routes", "versioning-manager-api.Routes\versioning-manager-api.Routes.csproj", "{531076FF-07D5-4D29-869B-43F864E334AA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.Models", "versioning-manager-api.Models\versioning-manager-api.Models.csproj", "{243A7609-9C31-441B-8B5A-4D199163CC5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.DbContext", "versioning-manager-api.DbContext\versioning-manager-api.DbContext.csproj", "{796D8F92-0040-467B-B952-E858F123315F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,5 +45,13 @@ Global
 		{531076FF-07D5-4D29-869B-43F864E334AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{531076FF-07D5-4D29-869B-43F864E334AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{531076FF-07D5-4D29-869B-43F864E334AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{243A7609-9C31-441B-8B5A-4D199163CC5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{243A7609-9C31-441B-8B5A-4D199163CC5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{243A7609-9C31-441B-8B5A-4D199163CC5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{243A7609-9C31-441B-8B5A-4D199163CC5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{796D8F92-0040-467B-B952-E858F123315F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{796D8F92-0040-467B-B952-E858F123315F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{796D8F92-0040-467B-B952-E858F123315F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{796D8F92-0040-467B-B952-E858F123315F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

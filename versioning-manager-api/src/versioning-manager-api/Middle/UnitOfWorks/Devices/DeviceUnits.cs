@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Models.Requests.Devices;
 using versioning_manager_api.SystemObjects;

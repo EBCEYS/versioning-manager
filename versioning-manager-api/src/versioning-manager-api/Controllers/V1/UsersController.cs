@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Extensions;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Middle.UnitOfWorks.Users;
@@ -15,7 +15,7 @@ using versioning_manager_api.Models;
 using versioning_manager_api.Models.Requests.Users;
 using versioning_manager_api.Models.Responses.Users;
 using versioning_manager_api.Routes;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 using versioning_manager_api.SystemObjects.Options;
 
@@ -564,7 +564,8 @@ public class UsersController(
     ///     Gets the users info.
     /// </summary>
     /// <param name="searchType">The search user type.</param>
-    /// <param name="username">The username. Should be set if
+    /// <param name="username">
+    ///     The username. Should be set if
     ///     <param name="searchType"></param>
     ///     is <see cref="UsersSearchType.One" />.
     /// </param>
@@ -628,25 +629,4 @@ public class UsersController(
     {
         return Problem($"{name} not found!", GetType().Name, 404, $"{name} not found!");
     }
-}
-
-/// <summary>
-///     The users search types.
-/// </summary>
-public enum UsersSearchType
-{
-    /// <summary>
-    ///     Gets all users.
-    /// </summary>
-    All,
-
-    /// <summary>
-    ///     Gets active users only.
-    /// </summary>
-    ActiveOnly,
-
-    /// <summary>
-    ///     Gets one user by username.
-    /// </summary>
-    One
 }

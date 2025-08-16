@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Primitives;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.HashProcess;
-using versioning_manager_api.StaticStorages;
+using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 
 namespace versioning_manager_api.Middlewares;

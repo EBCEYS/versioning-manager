@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
-using versioning_manager_api.DevDatabase;
+using versioning_manager_api.DbContext.DevDatabase;
 
 namespace versioning_manager_api.UnitTests.Mocks;
 

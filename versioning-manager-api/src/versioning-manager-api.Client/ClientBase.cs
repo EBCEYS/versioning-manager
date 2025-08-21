@@ -37,7 +37,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         CancellationToken token = default) where TError : class
     {
         Url url = baseUrl.Clone();
-        urlAction.Invoke(url);
+        url = FormatUri(urlAction, url);
         FlurlRequest request = PrepareRequest(headers, url);
 
         IFlurlResponse? response = await request.AllowAnyHttpStatus().GetAsync(cancellationToken: token);
@@ -62,7 +62,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
         Url url = baseUrl.Clone();
-        urlAction.Invoke(url);
+        url = FormatUri(urlAction, url);
         FlurlRequest request = PrepareRequest(headers, url);
 
         IFlurlResponse? response =
@@ -101,13 +101,41 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
         Url url = baseUrl.Clone();
-        urlAction.Invoke(url);
+        url = FormatUri(urlAction, url);
         FlurlRequest request = PrepareRequest(headers, url);
 
         IFlurlResponse? response =
             await request.AllowAnyHttpStatus().PostJsonAsync(requestObject, cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
+    }
+
+    /// <summary>
+    ///     Posts the POST request with json body.
+    /// </summary>
+    /// <param name="urlAction">The action to enhance base url.</param>
+    /// <param name="headers">The headers.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <param name="requestObject">The object to place it in request body.</param>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TError"></typeparam>
+    /// <exception cref="VersioningManagerApiException{TError}">The exception with <typeparamref name="TError" /> object.</exception>
+    /// <exception cref="VersioningManagerApiException{TError}">
+    ///     The exception with <see cref="String" /> reprezentation of
+    ///     response content or service message.
+    /// </exception>
+    protected async Task PostJsonAsync<TRequest, TError>(Action<Url> urlAction,
+        TRequest? requestObject,
+        Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
+    {
+        Url url = baseUrl.Clone();
+        url = FormatUri(urlAction, url);
+        FlurlRequest request = PrepareRequest(headers, url);
+
+        IFlurlResponse? response =
+            await request.AllowAnyHttpStatus().PostJsonAsync(requestObject, cancellationToken: token);
+
+        await ProcessResponse<TError>(response, token);
     }
 
     /// <summary>
@@ -131,13 +159,72 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
         Url url = baseUrl.Clone();
-        urlAction.Invoke(url);
+        url = FormatUri(urlAction, url);
         FlurlRequest request = PrepareRequest(headers, url);
 
         IFlurlResponse? response =
             await request.AllowAnyHttpStatus().PutJsonAsync(requestObject, cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
+    }
+
+    /// <summary>
+    ///     Posts the PUT request with json body.
+    /// </summary>
+    /// <param name="urlAction">The action to enhance base url.</param>
+    /// <param name="headers">The headers.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <param name="requestObject">The object to place it in request body.</param>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TError"></typeparam>
+    /// <exception cref="VersioningManagerApiException{TError}">The exception with <typeparamref name="TError" /> object.</exception>
+    /// <exception cref="VersioningManagerApiException{TError}">
+    ///     The exception with <see cref="String" /> reprezentation of
+    ///     response content or service message.
+    /// </exception>
+    protected async Task PutJsonAsync<TRequest, TError>(Action<Url> urlAction,
+        TRequest requestObject,
+        Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
+    {
+        Url url = baseUrl.Clone();
+        url = FormatUri(urlAction, url);
+        FlurlRequest request = PrepareRequest(headers, url);
+
+        IFlurlResponse? response =
+            await request.AllowAnyHttpStatus().PutJsonAsync(requestObject, cancellationToken: token);
+
+        await ProcessResponse<TError>(response, token);
+    }
+
+    /// <summary>
+    ///     Posts the PUT request.
+    /// </summary>
+    /// <param name="urlAction">The action to enhance base url.</param>
+    /// <param name="headers">The headers.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <typeparam name="TError"></typeparam>
+    /// <exception cref="VersioningManagerApiException{TError}">The exception with <typeparamref name="TError" /> object.</exception>
+    /// <exception cref="VersioningManagerApiException{TError}">
+    ///     The exception with <see cref="String" /> reprezentation of
+    ///     response content or service message.
+    /// </exception>
+    protected async Task PutAsync<TError>(Action<Url> urlAction,
+        Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
+    {
+        Url url = baseUrl.Clone();
+        url = FormatUri(urlAction, url);
+        FlurlRequest request = PrepareRequest(headers, url);
+
+        IFlurlResponse? response =
+            await request.AllowAnyHttpStatus().PutAsync(cancellationToken: token);
+
+        await ProcessResponse<TError>(response, token);
+    }
+
+    private static Url FormatUri(Action<Url> urlAction, Url url)
+    {
+        urlAction.Invoke(url);
+        return Url.Encode(url);
     }
 
     /// <summary>
@@ -158,13 +245,38 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
         Url url = baseUrl.Clone();
-        urlAction.Invoke(url);
+        url = FormatUri(urlAction, url);
         FlurlRequest request = PrepareRequest(headers, url);
 
         IFlurlResponse? response =
             await request.AllowAnyHttpStatus().DeleteAsync(cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
+    }
+
+    /// <summary>
+    ///     Posts the DELETE request.
+    /// </summary>
+    /// <param name="urlAction">The action to enhance base url.</param>
+    /// <param name="headers">The headers.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <typeparam name="TError"></typeparam>
+    /// <exception cref="VersioningManagerApiException{TError}">The exception with <typeparamref name="TError" /> object.</exception>
+    /// <exception cref="VersioningManagerApiException{TError}">
+    ///     The exception with <see cref="String" /> reprezentation of
+    ///     response content or service message.
+    /// </exception>
+    protected async Task DeleteAsync<TError>(Action<Url> urlAction,
+        Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
+    {
+        Url url = baseUrl.Clone();
+        url = FormatUri(urlAction, url);
+        FlurlRequest request = PrepareRequest(headers, url);
+
+        IFlurlResponse? response =
+            await request.AllowAnyHttpStatus().DeleteAsync(cancellationToken: token);
+
+        await ProcessResponse<TError>(response, token);
     }
 
     private async Task<TResponse> ProcessResponse<TResponse, TError>(IFlurlResponse response, CancellationToken token)
@@ -188,6 +300,22 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
 
         throw new VersioningManagerApiException<string>(response.StatusCode,
             await response.GetStringAsync(), IncorrectParsingExceptionMessage);
+    }
+
+    private async Task ProcessResponse<TError>(IFlurlResponse response, CancellationToken token)
+        where TError : class
+    {
+        if (response == null) throw new VersioningManagerApiException<string>(-1, "response is null!");
+
+        if (!response.ResponseMessage.IsSuccessStatusCode)
+        {
+            if (TryDeserialize(await response.ResponseMessage.Content.ReadAsByteArrayAsync(token), out TError? error) &&
+                error != null)
+                throw new VersioningManagerApiException<TError>(response.StatusCode, error,
+                    UnsuccessStatusCodeExceptionMessage);
+
+            throw new VersioningManagerApiException<TError>(response.StatusCode, UnsuccessStatusCodeExceptionMessage);
+        }
     }
 
     private FlurlRequest PrepareRequest(Dictionary<string, object>? headers, Url url)

@@ -18,20 +18,40 @@ public class VersioningManagerApiClientV1(string serverAddress, ClientsTimeouts?
     public IDeviceAdministrationClientV1 DeviceAdministrationClient { get; } =
         new DeviceAdministrationClientV1(serverAddress, timeouts?.DeviceAdministrationClientTimeout);
 
-    //public IProjectAdministrationClient ProjectAdministrationClient { get; }
+    /// <summary>
+    ///     The project administration client. The jwt require.
+    ///     <br />
+    ///     Client for projects, entries and images manipulation.
+    /// </summary>
+    public IProjectAdministrationClientV1 ProjectAdministrationClient { get; } =
+        new ProjectAdministrationClientV1(serverAddress, timeouts?.ProjectAdministrationClientTimeout);
+
     /// <summary>
     ///     The project client. The api key require.
     ///     <br />
     ///     Client to manipulate with project's content by ServiceUploader.
     /// </summary>
-    public IProjectClientV1? ProjectClient { get; set; } =
-        new ProjectClientV1(serverAddress, timeouts?.ProjectClientTimout);
-    //public IUsersClient UsersClient { get; }
+    public IProjectClientV1 ProjectClient { get; } =
+        new ProjectClientV1(serverAddress, timeouts?.ProjectClientTimeout);
+
+    /// <summary>
+    ///     The users client. The jwt require for all methods except login.
+    ///     <br />
+    ///     Client for users and roles manipulations.
+    /// </summary>
+    public IUsersClientV1 UsersClient { get; } =
+        new UsersClientV1(serverAddress, timeouts?.UsersClientTimeout);
 }
 
 /// <summary>
 ///     The <see cref="ClientsTimeouts" /> record.
 /// </summary>
 /// <param name="DeviceAdministrationClientTimeout">The timeout for <see cref="IDeviceAdministrationClientV1" />.</param>
-/// <param name="ProjectClientTimout">The timeout for <see cref="IProjectClientV1" />.</param>
-public record ClientsTimeouts(TimeSpan? DeviceAdministrationClientTimeout = null, TimeSpan? ProjectClientTimout = null);
+/// <param name="ProjectClientTimeout">The timeout for <see cref="IProjectClientV1" />.</param>
+/// <param name="ProjectAdministrationClientTimeout">The timeout for <see cref="IProjectAdministrationClientV1" />.</param>
+/// <param name="UsersClientTimeout">The timeout for <see cref="IUsersClientV1" />.</param>
+public record ClientsTimeouts(
+    TimeSpan? DeviceAdministrationClientTimeout = null,
+    TimeSpan? ProjectClientTimeout = null,
+    TimeSpan? ProjectAdministrationClientTimeout = null,
+    TimeSpan? UsersClientTimeout = null);

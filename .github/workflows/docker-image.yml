@@ -2,7 +2,7 @@ name: Build and Deploy to Docker Hub
 
 on:
   release:
-    types: [created]
+    types: [ created ]
 
 env:
   VER_MANAGER_DOCKER_IMAGE: ebcey/versioning-manager-api
@@ -17,48 +17,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Get Versioning Manager version
-      id: get_version_ver_manager
-      run: pwd && ls && echo "version=$(grep '<Version>' ${{ env.VER_MANAGER_DIR }}/versioning-manager-api.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')" >> $GITHUB_OUTPUT
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Get ServiceUploader version
-      id: get_version_uploader
-      run: pwd && ls && echo "version=$(grep '<Version>' ${{ env.SERV_UPLOADER_DIR }}/ServiceUploader.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')" >> $GITHUB_OUTPUT
+      - name: Get Versioning Manager version
+        id: get_version_ver_manager
+        run: pwd && ls && echo "version=$(grep '<Version>' ${{ env.VER_MANAGER_DIR }}/versioning-manager-api.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')" >> $GITHUB_OUTPUT
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Get ServiceUploader version
+        id: get_version_uploader
+        run: pwd && ls && echo "version=$(grep '<Version>' ${{ env.SERV_UPLOADER_DIR }}/ServiceUploader.csproj | sed 's/.*<Version>\(.*\)<\/Version>.*/\1/')" >> $GITHUB_OUTPUT
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Build and push Docker image (VersioningManager)
-      uses: docker/build-push-action@v5
-      with:
-        context: ${{ env.VER_MANAGER_DIR }}/
-        file: ${{ env.VER_MANAGER_DIR }}/Dockerfile
-        push: true
-        tags: |
-          ${{ env.VER_MANAGER_DOCKER_IMAGE }}:latest
-          ${{ env.VER_MANAGER_DOCKER_IMAGE }}:${{ github.sha }}
-          ${{ env.VER_MANAGER_DOCKER_IMAGE }}:${{ steps.get_version_ver_manager.outputs.version }}
-        build-args: |
-          BUILD_CONFIGURATION=Release
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push Docker image (ServiceUploader)
-      uses: docker/build-push-action@v5
-      with:
-        context: ${{ env.SERV_UPLOADER_DIR }}/
-        file: ${{ env.SERV_UPLOADER_DIR }}/Dockerfile
-        push: true
-        tags: |
-          ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:latest
-          ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:${{ github.sha }}
-          ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:${{ steps.get_version_uploader.outputs.version }}
-        build-args: |
-          BUILD_CONFIGURATION=Release
+      - name: Build and push Docker image (VersioningManager)
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.VER_MANAGER_DIR }}/
+          file: ${{ env.VER_MANAGER_DIR }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.VER_MANAGER_DOCKER_IMAGE }}:latest
+            ${{ env.VER_MANAGER_DOCKER_IMAGE }}:${{ github.sha }}
+            ${{ env.VER_MANAGER_DOCKER_IMAGE }}:${{ steps.get_version_ver_manager.outputs.version }}
+          build-args: |
+            BUILD_CONFIGURATION=Release
+
+      - name: Build and push Docker image (ServiceUploader)
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.SERV_UPLOADER_DIR }}/
+          file: ${{ env.SERV_UPLOADER_DIR }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:latest
+            ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:${{ github.sha }}
+            ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:${{ steps.get_version_uploader.outputs.version }}
+          build-args: |
+            BUILD_CONFIGURATION=Release

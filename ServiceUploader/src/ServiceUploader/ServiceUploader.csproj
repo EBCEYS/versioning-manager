@@ -12,16 +12,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Docker.DotNet" Version="3.125.15" />
-      <PackageReference Include="EBCEYS.ContainersEnvironment" Version="0.0.8" />
-      <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0" />
-      <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+        <PackageReference Include="Docker.DotNet" Version="3.125.15"/>
+        <PackageReference Include="EBCEYS.ContainersEnvironment" Version="0.0.8"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.3.0"/>
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
 </Project>

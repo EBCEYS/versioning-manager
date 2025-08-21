@@ -6,19 +6,19 @@ using versioning_manager_api.Client.Interfaces;
 using versioning_manager_api.Models;
 using versioning_manager_api.Models.Requests.Devices;
 using versioning_manager_api.Models.Responses.Devices;
-using versioning_manager_api.Routes;
+using static versioning_manager_api.Routes.ControllerRoutes.DeviceAdministrationV1Routes;
 
 namespace versioning_manager_api.Client.Services;
 
 internal class DeviceAdministrationClientV1(string serverAddress, TimeSpan? timeout) : ClientBase(
-    new FlurlClient(serverAddress.AppendPathSegment(ControllerRoutes.DeviceAdministrationV1Routes.GetBaseRoute())),
+    new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
     timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web), IDeviceAdministrationClientV1
 {
     public async Task<DeviceTokenInfoResponse> CreateDeviceAsync(CreateDeviceModel request, string jwt,
         CancellationToken token = default)
     {
         return await PostJsonAsync<CreateDeviceModel, DeviceTokenInfoResponse, ProblemDetails>(
-            url => url.AppendPathSegment(ControllerRoutes.DeviceAdministrationV1Routes.PostDeviceRoute), request,
+            url => url.AppendPathSegment(PostDeviceRoute), request,
             GetJwtHeaders(jwt), token);
     }
 
@@ -26,7 +26,7 @@ internal class DeviceAdministrationClientV1(string serverAddress, TimeSpan? time
         CancellationToken token = default)
     {
         return await PutJsonAsync<UpdateDeviceModel, DeviceTokenInfoResponse, ProblemDetails>(
-            url => url.AppendPathSegment(ControllerRoutes.DeviceAdministrationV1Routes.RefreshDeviceRoute), request,
+            url => url.AppendPathSegment(RefreshDeviceRoute), request,
             GetJwtHeaders(jwt), token);
     }
 
@@ -50,7 +50,7 @@ internal class DeviceAdministrationClientV1(string serverAddress, TimeSpan? time
     public async Task DeleteDeviceAsync(Guid id, string jwt, CancellationToken token = default)
     {
         await DeleteJsonAsync<object, ProblemDetails>(
-            url => url.AppendPathSegment(ControllerRoutes.DeviceAdministrationV1Routes.DeleteDeviceRoute)
+            url => url.AppendPathSegment(DeleteDeviceRoute)
                 .AppendQueryParam("id", id), GetJwtHeaders(jwt), token);
     }
 
@@ -59,7 +59,7 @@ internal class DeviceAdministrationClientV1(string serverAddress, TimeSpan? time
     {
         return await GetJsonAsync<DeviceInfoResponse[], ProblemDetails>(url =>
         {
-            url.AppendPathSegment(ControllerRoutes.DeviceAdministrationV1Routes.GetDevicesRoute)
+            url.AppendPathSegment(GetDevicesRoute)
                 .AppendQueryParam("searchType", searchType.ToString());
             if (id != null) url.AppendQueryParam("id", id);
         }, GetJwtHeaders(jwt), token);

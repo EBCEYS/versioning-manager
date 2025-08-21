@@ -1,5 +1,3 @@
-
-
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 
 using versioning_manager_api.DbContext.DevDatabase;

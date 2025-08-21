@@ -186,7 +186,7 @@ public class UsersController(
     /// <summary>
     ///     Changes the user password.
     /// </summary>
-    /// <param name="userName">The username.</param>
+    /// <param name="username">The username.</param>
     /// <param name="model">The change password api model.</param>
     /// <response code="200">Password changed successfully.</response>
     /// <response code="400">User not found or current password was incorrect.</response>
@@ -198,14 +198,14 @@ public class UsersController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ChangePasswordAsync(
         [Required] [MaxLength(FieldsLimits.MaxUsernameLength)] [FromQuery]
-        string userName,
+        string username,
         [Required] [FromBody] ChangePasswordModel model)
     {
-        using IDisposable? scope = logger.BeginScope("Try change password for user {username}", userName);
+        using IDisposable? scope = logger.BeginScope("Try change password for user {username}", username);
         try
         {
             OperationResult<object> result =
-                await units.ChangePasswordAsync(userName, model, hasher, HttpContext.RequestAborted);
+                await units.ChangePasswordAsync(username, model, hasher, HttpContext.RequestAborted);
             switch (result.Result)
             {
                 case OperationResult.Success:
@@ -237,7 +237,7 @@ public class UsersController(
     /// <response code="400">User not found or current password was incorrect.</response>
     /// <response code="401">Incorrect JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.UsersV1Routes.ChangeSelfPasswordRoute)]
+    [HttpPut(ControllerRoutes.UsersV1Routes.ChangeSelfPasswordRoute)]
     [Authorize]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]

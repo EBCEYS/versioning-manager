@@ -5,20 +5,20 @@ using Microsoft.AspNetCore.Mvc;
 using versioning_manager_api.Client.Interfaces;
 using versioning_manager_api.Models.Requests.Images;
 using versioning_manager_api.Models.Responses.Images;
-using versioning_manager_api.Routes;
 using versioning_manager_api.Routes.StaticStorages;
+using static versioning_manager_api.Routes.ControllerRoutes.ProjectV1Routes;
 
 namespace versioning_manager_api.Client.Services;
 
 internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : ClientBase(
-    new FlurlClient(serverAddress.AppendPathSegments(ControllerRoutes.ProjectV1Routes.GetBaseRoute())),
+    new FlurlClient(serverAddress.AppendPathSegments(GetBaseRoute())),
     timeout ?? TimeSpan.FromSeconds(120), JsonSerializerOptions.Web), IProjectClientV1
 {
     public async Task<DeviceProjectInfoResponse> GetProjectInfoAsync(string projectName, string apiKey,
         CancellationToken token = default)
     {
         return await GetJsonAsync<DeviceProjectInfoResponse, ProblemDetails>(url =>
-                url.AppendPathSegments(ControllerRoutes.ProjectV1Routes.GetProjectInfoRouteWith(projectName)),
+                url.AppendPathSegments(GetProjectInfoRouteWith(projectName)),
             GetHeaders(apiKey),
             token);
     }
@@ -26,7 +26,7 @@ internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : Client
     public async Task<Stream> DownloadImageAsync(int imageId, string apiKey, CancellationToken token = default)
     {
         return await GetStreamAsync<ProblemDetails>(
-            url => url.AppendPathSegment(ControllerRoutes.ProjectV1Routes.DownloadImageRoute)
+            url => url.AppendPathSegment(DownloadImageRoute)
                 .AppendQueryParam("id", imageId), GetHeaders(apiKey), token);
     }
 
@@ -34,7 +34,7 @@ internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : Client
         CancellationToken token = default)
     {
         await PostJsonAsync<UploadImageInfoModel, object, ProblemDetails>(
-            url => url.AppendPathSegment(ControllerRoutes.ProjectV1Routes.PostImageInfoRoute), imageInfo,
+            url => url.AppendPathSegment(PostImageInfoRoute), imageInfo,
             GetHeaders(apiKey),
             token);
     }
@@ -42,7 +42,7 @@ internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : Client
     public async Task<Stream> GetDockerComposeFileAsync(int entryId, string apiKey, CancellationToken token = default)
     {
         return await GetStreamAsync<ProblemDetails>(
-            url => url.AppendPathSegment(ControllerRoutes.ProjectV1Routes.GetProjectComposeFileRouteWith(entryId)),
+            url => url.AppendPathSegment(GetProjectComposeFileRouteWith(entryId)),
             GetHeaders(apiKey), token);
     }
 

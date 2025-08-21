@@ -1,16 +1,21 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "EBCEYS.Environment-Replacer",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build-EBCEYS.Environment-Replacer",
-            "program": "${workspaceFolder}/EBCEYS.Environment-Replacer/bin/Debug/net9.0/EBCEYS.Environment-Replacer.dll",
-            "args": ["testSource.txt", "destFile.txt", "-d", "_val_"],
-            "cwd": "${workspaceFolder}/EBCEYS.Environment-Replacer",
-            "stopAtEntry": false,
-            "console": "internalConsole"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "EBCEYS.Environment-Replacer",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-EBCEYS.Environment-Replacer",
+      "program": "${workspaceFolder}/EBCEYS.Environment-Replacer/bin/Debug/net9.0/EBCEYS.Environment-Replacer.dll",
+      "args": [
+        "testSource.txt",
+        "destFile.txt",
+        "-d",
+        "_val_"
+      ],
+      "cwd": "${workspaceFolder}/EBCEYS.Environment-Replacer",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
 }

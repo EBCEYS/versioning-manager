@@ -14,30 +14,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install dotnet
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: "9.0.x"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Test versioning-manager-api
-      run: dotnet test ${{ env.VER_MANAGER_DIR }}
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Test versioning-manager-api
+        run: dotnet test ${{ env.VER_MANAGER_DIR }}
 
   test-service-uploader:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Install dotnet
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: "9.0.x"
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Test ServiceUploader
-      run: dotnet test ${{ env.SERV_UPLOADER_DIR }}
+      - name: Install dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Test ServiceUploader
+        run: dotnet test ${{ env.SERV_UPLOADER_DIR }}
 
     

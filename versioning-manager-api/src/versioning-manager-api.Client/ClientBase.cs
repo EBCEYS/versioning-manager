@@ -279,6 +279,19 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         await ProcessResponse<TError>(response, token);
     }
 
+    protected async Task PostStreamAsync<TError>(Action<Url> urlAction, Stream stream,
+        Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
+    {
+        Url url = baseUrl.Clone();
+        url = FormatUri(urlAction, url);
+        FlurlRequest request = PrepareRequest(headers, url);
+
+        IFlurlResponse? response = await request.AllowAnyHttpStatus()
+            .PostAsync(new StreamContent(stream), cancellationToken: token);
+
+        await ProcessResponse<TError>(response, token);
+    }
+
     private async Task<TResponse> ProcessResponse<TResponse, TError>(IFlurlResponse response, CancellationToken token)
         where TError : class
     {

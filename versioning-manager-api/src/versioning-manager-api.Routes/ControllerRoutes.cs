@@ -101,6 +101,7 @@ public static class ControllerRoutes
         public const string ControllerRoute = "api/v{version:apiVersion}/project";
 
         public const string DownloadImageRoute = "image/file";
+        public const string UploadImageRoute = "image/file";
         public const string PostImageInfoRoute = "image";
 
         /// <summary>
@@ -142,7 +143,7 @@ public static class ControllerRoutes
         public const string LoginRoute = "login";
         public const string CreateRoleRoute = "create/role";
         public const string ChangePasswordRoute = "change/password";
-        public const string ChangeSelfPasswordRoute = "change/password";
+        public const string ChangeSelfPasswordRoute = "change/self/password";
         public const string GetSystemRolesRoute = "system/roles";
         public const string GetUserRolesRoute = "user/roles";
         public const string ChangeUsersRoleRoute = "user/role";

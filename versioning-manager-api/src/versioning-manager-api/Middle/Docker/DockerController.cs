@@ -8,9 +8,60 @@ using versioning_manager_api.SystemObjects.Options;
 namespace versioning_manager_api.Middle.Docker;
 
 /// <summary>
+///     The <see cref="IDockerController" /> interface.
+/// </summary>
+public interface IDockerController : IHostedService
+{
+    /// <summary>
+    ///     Pulls the image from gitlab registry.
+    /// </summary>
+    /// <param name="imageName">The image tag.</param>
+    /// <param name="token">The cancellation token.</param>
+    Task PullImageFromGitlabAsync(string imageName,
+        CancellationToken token = default);
+
+    /// <summary>
+    ///     Check image exists in local docker images storage.
+    /// </summary>
+    /// <param name="imageName">The image name.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns><c>true</c> if image exists; otherwise <c>false</c>.</returns>
+    Task<bool> IsImageExistsAsync(string imageName, CancellationToken token = default);
+
+    /// <summary>
+    ///     Gets the image as file.
+    /// </summary>
+    /// <param name="imageName">The image tag.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>A <see cref="Stream" /> with image archive file.</returns>
+    Task<Stream> GetImageFileAsync(string imageName, CancellationToken token = default);
+
+    /// <summary>
+    ///     Removes the image from <see cref="DockerClient" /> registry.
+    /// </summary>
+    /// <param name="imageName">The image tag.</param>
+    /// <param name="token">The cancellation token.</param>
+    Task RemoveImageAsync(string imageName, CancellationToken token = default);
+
+    /// <summary>
+    ///     Gets the image list.
+    /// </summary>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>The <see cref="ImagesListResponse" /> collection.</returns>
+    Task<IList<ImagesListResponse>> GetImagesAsync(CancellationToken token = default);
+
+    /// <summary>
+    ///     Uploads the image to docker.
+    /// </summary>
+    /// <param name="imageStream">The image file stream.</param>
+    /// <param name="token">The cancellation token.</param>
+    Task UploadImageAsync(Stream imageStream, CancellationToken token = default);
+}
+
+/// <summary>
 ///     The docker controller.
 /// </summary>
-public class DockerController : IHostedService
+public class DockerController : IDockerController
 {
     private readonly DockerClient client;
     private readonly AuthConfig gitAuth;
@@ -22,7 +73,7 @@ public class DockerController : IHostedService
     /// <param name="gitOpts">The gitlab registry connection options.</param>
     public DockerController(IOptions<DockerClientOptions> opts, IOptions<GitlabRegistryConnectionOptions> gitOpts)
     {
-        Credentials? credentials = opts.Value.Credentials != null
+        Credentials credentials = opts.Value.Credentials != null
             ? new BasicAuthCredentials(opts.Value.Credentials.Username,
                 File.ReadAllText(opts.Value.Credentials.PasswordFile).Trim(),
                 opts.Value.Credentials.UseTls)
@@ -127,6 +178,16 @@ public class DockerController : IHostedService
             All = true
         }, token);
     }
+
+    /// <summary>
+    ///     Uploads the image to docker.
+    /// </summary>
+    /// <param name="imageStream">The image file stream.</param>
+    /// <param name="token">The cancellation token.</param>
+    public Task UploadImageAsync(Stream imageStream, CancellationToken token = default)
+    {
+        return client.Images.LoadImageAsync(new ImageLoadParameters(), imageStream, new Progress<JSONMessage>(), token);
+    }
 }
 
 /// <summary>
@@ -142,6 +203,7 @@ public static class DockerControllerServiceCollectionExtensions
     /// <returns>An instance of <paramref name="sc" />.</returns>
     public static IServiceCollection AddDockerController(this IServiceCollection sc)
     {
-        return sc.AddSingleton<DockerController>().AddHostedService(sp => sp.GetRequiredService<DockerController>());
+        return sc.AddSingleton<IDockerController, DockerController>()
+            .AddHostedService(sp => sp.GetRequiredService<IDockerController>());
     }
 }

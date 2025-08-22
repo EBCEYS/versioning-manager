@@ -11,6 +11,7 @@ using versioning_manager_api.Models.Responses.Projects;
 using versioning_manager_api.Routes;
 using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
+using static versioning_manager_api.Routes.ControllerRoutes.ProjectAdministrationV1Routes;
 
 namespace versioning_manager_api.Controllers.V1;
 
@@ -21,7 +22,7 @@ namespace versioning_manager_api.Controllers.V1;
 /// <param name="units"></param>
 [ApiController]
 [ApiVersion(ControllerRoutes.ProjectAdministrationV1Routes.ApiVersion)]
-[Route(ControllerRoutes.ProjectAdministrationV1Routes.ControllerRoute)]
+[Route(ControllerRoute)]
 public class ProjectAdministrationController(ILogger<ProjectAdministrationController> logger, ProjectsUnits units)
     : ControllerBase
 {
@@ -34,7 +35,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <response code="404">User not found.</response>
     /// <response code="409">Project with such name already exists.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.ProjectAdministrationV1Routes.PostProjectRoute)]
+    [HttpPost(PostProjectRoute)]
     [Authorize(Roles = RolesStorage.ProjectCreateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -84,7 +85,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <response code="404">Project not found.</response>
     /// <response code="409">Project entry with such version already exists.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.ProjectAdministrationV1Routes.PostProjectEntryRoute)]
+    [HttpPost(PostProjectEntryRoute)]
     [Authorize(Roles = RolesStorage.ProjectCreateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -132,7 +133,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// </summary>
     /// <response code="200">List of all projects.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.ProjectAdministrationV1Routes.GetProjectsRoute)]
+    [HttpGet(GetProjectsRoute)]
     [Authorize(Roles = RolesStorage.GetProjectsRole)]
     [ProducesResponseType<IEnumerable<ProjectInfoResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -157,7 +158,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <response code="200">List of all project entries. May be empty ;)</response>
     /// <response code="404">Project not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.ProjectAdministrationV1Routes.GetProjectEntriesRoute)]
+    [HttpGet(GetProjectEntriesRoute)]
     [Authorize(Roles = RolesStorage.GetProjectsRole)]
     [ProducesResponseType<IEnumerable<ProjectEntryInfoResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
@@ -199,7 +200,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <response code="401">Wrong JWT.</response>
     /// <response code="404">Project entry not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.ProjectAdministrationV1Routes.ChangeProjectEntryActualityRoute)]
+    [HttpPut(ChangeProjectEntryActualityRoute)]
     [Authorize(Roles = RolesStorage.ProjectUpdateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -245,7 +246,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <param name="id">The project entry id.</param>
     /// <response code="200">List of images.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.ProjectAdministrationV1Routes.GetProjectEntryImagesRoute)]
+    [HttpGet(GetProjectEntryImagesRoute)]
     [Authorize(Roles = RolesStorage.GetProjectsRole)]
     [ProducesResponseType<IEnumerable<ImageInfoResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -276,7 +277,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <response code="400">Incorrect images.</response>
     /// <response code="401">Wrong JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.ProjectAdministrationV1Routes.MigrateImagesToAnotherProjectRoute)]
+    [HttpPost(MigrateImagesToAnotherProjectRoute)]
     [Authorize(Roles = RolesStorage.ProjectUpdateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -327,7 +328,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     /// <response code="401">Wrong username.</response>
     /// <response code="404">Not found image.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.ProjectAdministrationV1Routes.ChangeImageActualityRoute)]
+    [HttpPut(ChangeImageActualityRoute)]
     [Authorize(Roles = RolesStorage.ProjectUpdateRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]

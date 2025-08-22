@@ -46,6 +46,12 @@ internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : Client
             GetHeaders(apiKey), token);
     }
 
+    public Task UploadImageFileAsync(Stream imageStream, string apiKey, CancellationToken token = default)
+    {
+        return PostStreamAsync<ProblemDetails>(url => url.AppendPathSegment(UploadImageRoute), imageStream,
+            GetHeaders(apiKey), token);
+    }
+
     private static Dictionary<string, object> GetHeaders(string apiKey)
     {
         return new Dictionary<string, object>(GetDefaultHeaders())

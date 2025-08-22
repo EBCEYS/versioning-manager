@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -151,6 +152,12 @@ internal class Program
         services.Configure<DefaultUserOptions>(configuration.GetSection(DefaultUserConfigKey));
         services.Configure<DockerClientOptions>(configuration.GetSection(DockerClientConfigKey));
         services.Configure<GitlabRegistryConnectionOptions>(configuration.GetSection(GitlabRegistryConfigKey));
+
+        services.Configure<FormOptions>(x =>
+        {
+            x.ValueLengthLimit = int.MaxValue;
+            x.MultipartBodyLengthLimit = int.MaxValue;
+        });
 
         services.AddAppStartingService();
 

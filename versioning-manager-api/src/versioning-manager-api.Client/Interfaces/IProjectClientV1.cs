@@ -52,4 +52,14 @@ public interface IProjectClientV1
     /// <exception cref="VersioningManagerApiException{TError}">The server response error.</exception>
     /// <exception cref="VersioningManagerApiException{String}">The internal service error.</exception>
     Task<Stream> GetDockerComposeFileAsync(int entryId, string apiKey, CancellationToken token = default);
+
+    /// <summary>
+    ///     Uploads the image to versioning-manager.
+    /// </summary>
+    /// <param name="imageStream">The image file stream.</param>
+    /// <param name="apiKey">The api key.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <exception cref="VersioningManagerApiException{TError}">The server response error.</exception>
+    /// <exception cref="VersioningManagerApiException{String}">The internal service error.</exception>
+    Task UploadImageFileAsync(Stream imageStream, string apiKey, CancellationToken token = default);
 }

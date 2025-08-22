@@ -18,6 +18,7 @@ using versioning_manager_api.Routes;
 using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 using versioning_manager_api.SystemObjects.Options;
+using static versioning_manager_api.Routes.ControllerRoutes.UsersV1Routes;
 
 namespace versioning_manager_api.Controllers.V1;
 
@@ -31,7 +32,7 @@ namespace versioning_manager_api.Controllers.V1;
 /// <param name="jwtOpts">The jwt options.</param>
 [ApiController]
 [ApiVersion(ControllerRoutes.UsersV1Routes.ApiVersion)]
-[Route(ControllerRoutes.UsersV1Routes.ControllerRoute)]
+[Route(ControllerRoute)]
 public class UsersController(
     ILogger<UsersController> logger,
     UserUnits units,
@@ -48,7 +49,7 @@ public class UsersController(
     /// <response code="400">Incorrect params.</response>
     /// <response code="409">User already exists.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.UsersV1Routes.CreateNewUserRoute)]
+    [HttpPost(CreateNewUserRoute)]
     [Authorize(Roles = RolesStorage.CreateUserRole)]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -91,7 +92,7 @@ public class UsersController(
     /// <response code="200">User authenticated successfully.</response>
     /// <response code="401">User not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.UsersV1Routes.LoginRoute)]
+    [HttpPost(LoginRoute)]
     [AllowAnonymous]
     [ProducesResponseType<TokenResponseModel>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
@@ -141,7 +142,7 @@ public class UsersController(
     /// <response code="401">Wrong JWT.</response>
     /// <response code="409">Role already exists.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.UsersV1Routes.CreateRoleRoute)]
+    [HttpPost(CreateRoleRoute)]
     [Authorize(Roles = RolesStorage.CreateRoleRole)]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -191,7 +192,7 @@ public class UsersController(
     /// <response code="200">Password changed successfully.</response>
     /// <response code="400">User not found or current password was incorrect.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.UsersV1Routes.ChangePasswordRoute)]
+    [HttpPut(ChangePasswordRoute)]
     [Authorize(Roles = RolesStorage.ChangePasswordRole)]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -237,7 +238,7 @@ public class UsersController(
     /// <response code="400">User not found or current password was incorrect.</response>
     /// <response code="401">Incorrect JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.UsersV1Routes.ChangeSelfPasswordRoute)]
+    [HttpPut(ChangeSelfPasswordRoute)]
     [Authorize]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -264,7 +265,7 @@ public class UsersController(
     ///     Gets the system roles list.
     /// </summary>
     /// <response code="200">List of system roles.</response>
-    [HttpGet(ControllerRoutes.UsersV1Routes.GetSystemRolesRoute)]
+    [HttpGet(GetSystemRolesRoute)]
     [Authorize(Roles = RolesStorage.GetSystemRolesRole)]
     [ProducesResponseType<IEnumerable<string>>(StatusCodes.Status200OK)]
     public IActionResult GetSystemRoles()
@@ -277,7 +278,7 @@ public class UsersController(
     /// </summary>
     /// <response code="200">The users roles list.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.UsersV1Routes.GetUserRolesRoute)]
+    [HttpGet(GetUserRolesRoute)]
     [Authorize(Roles = RolesStorage.GetUserRolesRole)]
     [ProducesResponseType<IEnumerable<string>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -302,7 +303,7 @@ public class UsersController(
     /// <response code="200">User role changed successfully.</response>
     /// <response code="400">Username or role not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.UsersV1Routes.ChangeUsersRoleRoute)]
+    [HttpPut(ChangeUsersRoleRoute)]
     [Authorize(Roles = RolesStorage.UpdateUserRoleRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
@@ -349,7 +350,7 @@ public class UsersController(
     /// <response code="401">Wrong JWT.</response>
     /// <response code="404">Role not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpDelete(ControllerRoutes.UsersV1Routes.DeleteUserRoleRoute)]
+    [HttpDelete(DeleteUserRoleRoute)]
     [Authorize(Roles = RolesStorage.DeleteRoleRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -394,7 +395,7 @@ public class UsersController(
     /// <response code="400">New roles does not match to system roles.</response>
     /// <response code="401">Wrong JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.UsersV1Routes.UpdateRoleRoute)]
+    [HttpPut(UpdateRoleRoute)]
     [Authorize(Roles = RolesStorage.UpdateRoleRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -449,7 +450,7 @@ public class UsersController(
     /// <response code="304">No changes.</response>
     /// <response code="401">Wrong JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpDelete(ControllerRoutes.UsersV1Routes.DeleteUserRoute)]
+    [HttpDelete(DeleteUserRoute)]
     [Authorize(Roles = RolesStorage.DeleteUserRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status304NotModified)]
@@ -495,7 +496,7 @@ public class UsersController(
     /// <response code="304">No changes.</response>
     /// <response code="401">Wrong JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.UsersV1Routes.ActivateDeletedUserRoute)]
+    [HttpPut(ActivateDeletedUserRoute)]
     [Authorize(Roles = RolesStorage.DeleteUserRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status304NotModified)]
@@ -572,7 +573,7 @@ public class UsersController(
     /// <response code="200">Users list if exists. May be empty.</response>
     /// <response code="400">Invalid params.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.UsersV1Routes.GetUserInfoRoute)]
+    [HttpGet(GetUserInfoRoute)]
     [Authorize(Roles = RolesStorage.GetUsersRole)]
     [ProducesResponseType<IEnumerable<UserInfoResponseModel>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]

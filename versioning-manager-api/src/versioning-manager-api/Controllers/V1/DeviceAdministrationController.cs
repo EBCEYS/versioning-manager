@@ -13,6 +13,7 @@ using versioning_manager_api.Models.Responses.Devices;
 using versioning_manager_api.Routes;
 using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
+using static versioning_manager_api.Routes.ControllerRoutes.DeviceAdministrationV1Routes;
 
 namespace versioning_manager_api.Controllers.V1;
 
@@ -25,7 +26,7 @@ namespace versioning_manager_api.Controllers.V1;
 /// <param name="keyGen"></param>
 [ApiController]
 [ApiVersion(ControllerRoutes.DeviceAdministrationV1Routes.ApiVersion)]
-[Route(ControllerRoutes.DeviceAdministrationV1Routes.ControllerRoute)]
+[Route(ControllerRoute)]
 public class DeviceAdministrationController(
     ILogger<DeviceAdministrationController> logger,
     DeviceUnits units,
@@ -57,7 +58,7 @@ public class DeviceAdministrationController(
     /// <response code="401">Wrong JWT.</response>
     /// <response code="404">Not found creator user (you).</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.DeviceAdministrationV1Routes.PostDeviceRoute)]
+    [HttpPost(PostDeviceRoute)]
     [Authorize(Roles = RolesStorage.CreateDeviceRole)]
     [ProducesResponseType<DeviceTokenInfoResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -79,7 +80,7 @@ public class DeviceAdministrationController(
                 HttpContext.RequestAborted);
             if (result is { Result: OperationResult.Success, Object: not null })
             {
-                logger.LogError("New device created successfully!");
+                logger.LogInformation("New device created successfully!");
                 DeviceTokenInfoResponse response = new()
                 {
                     DeviceId = deviceId,
@@ -114,7 +115,7 @@ public class DeviceAdministrationController(
     /// <response code="401">Wrong JWT.</response>
     /// <response code="404">Not found device.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPut(ControllerRoutes.DeviceAdministrationV1Routes.RefreshDeviceRoute)]
+    [HttpPut(RefreshDeviceRoute)]
     [Authorize(Roles = RolesStorage.UpdateDeviceRole)]
     [ProducesResponseType<DeviceTokenInfoResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -173,7 +174,7 @@ public class DeviceAdministrationController(
     /// </response>
     /// <response code="401">Wrong JWT.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.DeviceAdministrationV1Routes.GetDevicesRoute)]
+    [HttpGet(GetDevicesRoute)]
     [Authorize(Roles = RolesStorage.ListDeviceRole)]
     [ProducesResponseType<IEnumerable<DeviceInfoResponse>>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -227,7 +228,7 @@ public class DeviceAdministrationController(
     /// <response code="401">Wrong JWT.</response>
     /// <response code="404">Device not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpDelete(ControllerRoutes.DeviceAdministrationV1Routes.DeleteDeviceRoute)]
+    [HttpDelete(DeleteDeviceRoute)]
     [Authorize(Roles = RolesStorage.DeleteDeviceRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]

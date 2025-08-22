@@ -10,7 +10,7 @@ namespace versioning_manager_api.Middle.UnitOfWorks.Projects;
 ///     The project units of work.
 /// </summary>
 /// <param name="db">The database context.</param>
-public class ProjectsUnits(VmDatabaseContext db, DockerController docker)
+public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
 {
     /// <summary>
     ///     Creates a new project.

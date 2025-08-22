@@ -11,6 +11,7 @@ using versioning_manager_api.Models.Responses.Images;
 using versioning_manager_api.Routes;
 using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
+using static versioning_manager_api.Routes.ControllerRoutes.ProjectV1Routes;
 
 namespace versioning_manager_api.Controllers.V1;
 
@@ -20,7 +21,7 @@ namespace versioning_manager_api.Controllers.V1;
 /// <response code="403">Forbidden. Request without Apikey header.</response>
 [ApiController]
 [ApiVersion(ControllerRoutes.ProjectV1Routes.ApiVersion)]
-[Route(ControllerRoutes.ProjectV1Routes.ControllerRoute)]
+[Route(ControllerRoute)]
 [RequireApiKey]
 [AllowAnonymous]
 [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
@@ -51,7 +52,7 @@ public class ProjectController : ControllerBase
     /// <response code="200">The image tag archive file stream.</response>
     /// <response code="404">Image not found in database or registry.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.ProjectV1Routes.DownloadImageRoute)]
+    [HttpGet(DownloadImageRoute)]
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -77,6 +78,38 @@ public class ProjectController : ControllerBase
     }
 
     /// <summary>
+    ///     Uploads the image to docker registry.
+    /// </summary>
+    /// <param name="file">The image file.</param>
+    /// <response code="200">Image file uploaded successfully.</response>
+    /// <response code="403">Wrong device (requester).</response>
+    /// <response code="404">Not found project or image.</response>
+    /// <response code="500">Internal error.</response>
+    [HttpPost(UploadImageRoute)]
+    [RequestSizeLimit(1024 * 1024 * 1024)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UploadImageAsync([Required] IFormFile file)
+    {
+        ApiKeyEntity requester = Requester;
+        using IDisposable? scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
+        try
+        {
+            Stream imageStream = file.OpenReadStream();
+            imageStream.Seek(0, SeekOrigin.Begin);
+            await unit.UploadImageAsync(imageStream, HttpContext.RequestAborted);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error on uploading image info!");
+            return InternalError();
+        }
+    }
+
+    /// <summary>
     ///     Uploads the image info.
     /// </summary>
     /// <param name="model">The model.</param>
@@ -84,7 +117,7 @@ public class ProjectController : ControllerBase
     /// <response code="403">Wrong device (requester).</response>
     /// <response code="404">Not found project or image.</response>
     /// <response code="500">Internal error.</response>
-    [HttpPost(ControllerRoutes.ProjectV1Routes.PostImageInfoRoute)]
+    [HttpPost(PostImageInfoRoute)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
@@ -132,7 +165,7 @@ public class ProjectController : ControllerBase
     /// <response code="200">The project info.</response>
     /// <response code="404">Not found actual project.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.ProjectV1Routes.GetProjectInfoRoute)]
+    [HttpGet(GetProjectInfoRoute)]
     [ProducesResponseType<DeviceProjectInfoResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -159,7 +192,7 @@ public class ProjectController : ControllerBase
     /// <response code="200">Docker-compose.yaml file stream.</response>
     /// <response code="404">Project entry not found.</response>
     /// <response code="500">Internal error.</response>
-    [HttpGet(ControllerRoutes.ProjectV1Routes.GetProjectComposeFileRoute)]
+    [HttpGet(GetProjectComposeFileRoute)]
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]

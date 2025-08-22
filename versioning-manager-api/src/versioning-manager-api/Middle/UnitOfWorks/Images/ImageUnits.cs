@@ -12,7 +12,7 @@ namespace versioning_manager_api.Middle.UnitOfWorks.Images;
 ///     The image units.
 /// </summary>
 /// <param name="db">The database context.</param>
-public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerComposeHelper composeHelper)
+public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerComposeHelper composeHelper)
 {
     /// <summary>
     ///     Gets the image file.
@@ -132,5 +132,15 @@ public class ImageUnits(VmDatabaseContext db, DockerController docker, DockerCom
             .Where(i => i.ProjectId == projectEntryId && i.Project.IsActual && i.IsActive)
             .ToListAsync(token);
         return images.Count > 0 ? composeHelper.GetTotalCompose(images.Select(i => i.DockerCompose)) : null;
+    }
+
+    /// <summary>
+    ///     Uploads the docker image to docker registry.
+    /// </summary>
+    /// <param name="imageStream">The image stream.</param>
+    /// <param name="token">The cancellation token.</param>
+    public Task UploadImageAsync(Stream imageStream, CancellationToken token = default)
+    {
+        return docker.UploadImageAsync(imageStream, token);
     }
 }

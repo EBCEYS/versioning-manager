@@ -66,7 +66,7 @@ public class ApiKeyProcessor(ICryptHelper crypt) : IApiKeyProcessor
         if (text == null) return null;
         try
         {
-            string? json = crypt.Decrypt(text);
+            var json = crypt.Decrypt(text);
             return ApiKeyEntity.FromJson(json);
         }
         catch (Exception)
@@ -79,15 +79,15 @@ public class ApiKeyProcessor(ICryptHelper crypt) : IApiKeyProcessor
     public async Task<(ApiKeyValidationResult, ApiKeyEntity?)> ValidateAsync(string encryptedKey, VmDatabaseContext db,
         IHashHelper hasher)
     {
-        ApiKeyEntity? key = Decrypt(encryptedKey);
+        var key = Decrypt(encryptedKey);
         if (key == null) return (ApiKeyValidationResult.IncorrectKey, key);
-        DbDevice? device = await db.Devices.AsNoTracking().FirstOrDefaultAsync(d => d.Id == key.DeviceId && d.IsActive);
+        var device = await db.Devices.AsNoTracking().FirstOrDefaultAsync(d => d.Id == key.DeviceId && d.IsActive);
         if (device == null) return (ApiKeyValidationResult.DeviceNotFound, key);
 
-        string keyHash = hasher.Hash(encryptedKey, device.Salt);
+        var keyHash = hasher.Hash(encryptedKey, device.Salt);
         if (keyHash != device.KeyHash) return (ApiKeyValidationResult.IncorrectKey, key);
 
-        string sourceHash = hasher.Hash(key.Source, hasher.DefaultSalt);
+        var sourceHash = hasher.Hash(key.Source, hasher.DefaultSalt);
         if (sourceHash != device.SourceHash) return (ApiKeyValidationResult.IncorrectSource, key);
 
         return DateTimeOffset.UtcNow <= key.ExpiresUtc

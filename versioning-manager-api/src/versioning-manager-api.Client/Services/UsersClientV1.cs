@@ -21,11 +21,11 @@ internal class UsersClientV1(string serverAddress, TimeSpan? timeout) : ClientBa
             GetJwtHeaders(jwt), token);
     }
 
-    public async Task<TokenResponseModel> LoginAsync(UserLoginModel request, string jwt,
+    public async Task<TokenResponseModel> LoginAsync(UserLoginModel request,
         CancellationToken token = default)
     {
         return await PostJsonAsync<UserLoginModel, TokenResponseModel, ProblemDetails>(
-            url => url.AppendPathSegment(LoginRoute), request, GetJwtHeaders(jwt),
+            url => url.AppendPathSegment(LoginRoute), request, GetDefaultHeaders(),
             token);
     }
 

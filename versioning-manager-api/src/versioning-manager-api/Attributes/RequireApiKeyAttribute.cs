@@ -19,7 +19,7 @@ public class RequireApiKeyAttribute : ExceptionFilterAttribute, IActionFilter
     /// <inheritdoc />
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        Type currentController = context.Controller.GetType();
+        var currentController = context.Controller.GetType();
         if (IsDefined(currentController, GetType()) &&
             !context.HttpContext.Request.Headers.TryGetValue(ApikeyStorage.ApikeyHeader, out _))
             throw new ApiKeyRequireException(ApikeyStorage.ApikeyHeader);

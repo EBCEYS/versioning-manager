@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Extensions;
 using versioning_manager_api.Middle.UnitOfWorks.Projects;
 using versioning_manager_api.Models;
@@ -44,13 +43,13 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateProjectAsync([Required] [FromBody] CreateProjectModel model)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try create project.", username);
+        using var scope = logger.BeginScope("User {username} try create project.", username);
         try
         {
-            OperationResult result = await units.CreateProjectAsync(username, model.Name, model.AvailableSources,
+            var result = await units.CreateProjectAsync(username, model.Name, model.AvailableSources,
                 HttpContext.RequestAborted);
             switch (result)
             {
@@ -94,13 +93,13 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateProjectEntryAsync([Required] [FromBody] CreateProjectEntryModel model)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try create project entry.", username);
+        using var scope = logger.BeginScope("User {username} try create project entry.", username);
         try
         {
-            OperationResult result = await units.CreateProjectEntryAsync(username, model.ProjectName, model.Version,
+            var result = await units.CreateProjectEntryAsync(username, model.ProjectName, model.Version,
                 model.DefaultActuality, HttpContext.RequestAborted);
             switch (result)
             {
@@ -170,7 +169,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     {
         try
         {
-            OperationResult<IEnumerable<DbProjectEntry>> result = await units.GetAllProjectEntriesAsync(name,
+            var result = await units.GetAllProjectEntriesAsync(name,
                 searchType == ProjectEntrySearchTypes.Actual, HttpContext.RequestAborted);
             if (result is { Result: OperationResult.Success, Object: not null })
                 return Ok(result.Object.Select(p => ProjectEntryInfoResponse.Create(name, p)));
@@ -209,15 +208,15 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     public async Task<IActionResult> ChangeProjectEntryActuality([Required] [FromRoute] int id,
         [Required] [FromQuery] bool newStatus)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope =
+        using var scope =
             logger.BeginScope("User {username} try change project entry actuality to {newStatus}.", username,
                 newStatus);
         try
         {
-            OperationResult result =
+            var result =
                 await units.ChangeProjectEntryActualityAsync(id, newStatus, HttpContext.RequestAborted);
             switch (result)
             {
@@ -254,7 +253,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     {
         try
         {
-            IEnumerable<DbImageInfo> result = await units.GetImageInfosAsync(id, HttpContext.RequestAborted);
+            var result = await units.GetImageInfosAsync(id, HttpContext.RequestAborted);
             return Ok(result.Select(ImageInfoResponse.Create));
         }
         catch (Exception ex)
@@ -287,14 +286,14 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
         [Required] [FromBody] [MinLength(1)] [MaxLength(100)]
         IEnumerable<int> images)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try copy images to project {id}.", username, id);
+        using var scope = logger.BeginScope("User {username} try copy images to project {id}.", username, id);
         try
         {
-            int[] imagesArray = images as int[] ?? images.ToArray();
-            OperationResult result =
+            var imagesArray = images as int[] ?? images.ToArray();
+            var result =
                 await units.CopyImagesToNewProjectEntry(imagesArray.ToArray(), id, HttpContext.RequestAborted);
             switch (result)
             {
@@ -337,14 +336,14 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     public async Task<IActionResult> ChangeImageActivityAsync([Required] [FromRoute] int id,
         [Required] [FromQuery] bool newState)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope =
+        using var scope =
             logger.BeginScope("User {username} try change image activity to project {id}.", username, id);
         try
         {
-            OperationResult result = await units.ChangeImageActivityAsync(id, newState, HttpContext.RequestAborted);
+            var result = await units.ChangeImageActivityAsync(id, newState, HttpContext.RequestAborted);
             switch (result)
             {
                 case OperationResult.Success:

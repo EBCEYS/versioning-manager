@@ -14,6 +14,10 @@
     <s:String
             x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AProblemDetails_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2024_002E3_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F3c123c5d19a94f96a6c0a7bb6a7d7db94b000_003Fc8_003Fa7d48c2c_003FProblemDetails_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
     <s:String
+            x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AServiceProvider_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F011a191356a243438f987de3ec3d6c6230800_003F04_003F8419ff35_003FServiceProvider_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
+    <s:String
+            x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AStartupBase_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E2_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F997bf07d46f747209d06212ec26ecc6e6f200_003F02_003Fc4c1397d_003FStartupBase_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
+    <s:String
             x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AString_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2024_002E3_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F4c8540adf3cd4f6ab5d99f290234ba1ad19c00_003Ff9_003F4ba917e5_003FString_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
     <s:String
             x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AThrowHelper_002Ecs_002Fl_003A_002E_002E_003F_002E_002E_003F_002E_002E_003F_002E_002E_003F_002Econfig_003FJetBrains_003FRider2025_002E1_003Fresharper_002Dhost_003FDecompilerCache_003Fdecompiler_003F072e4491b11d407499982243b6c35c4716d400_003F8d_003F943112e7_003FThrowHelper_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
@@ -22,10 +26,7 @@
     <s:Boolean
             x:Key="/Default/Environment/EntityFramework/EntityFrameworkDisabledQueryInspectionsContexts/=versioning_005Fmanager_005Fapi_002EMiddle_002EDevDatabase_002EVmDatabaseContext/@EntryIndexedValue">True</s:Boolean>
 
-    <s:String
-            x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=6d4adba5_002Deb36_002D45f6_002D9cd7_002D64b62548f9dc/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
-  &lt;Solution /&gt;
-&lt;/SessionState&gt;</s:String>
+
     <s:String
             x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=bf31112b_002D0b8a_002D4347_002D9eb2_002De6af1275502a/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="All tests from Solution" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;
   &lt;Solution /&gt;

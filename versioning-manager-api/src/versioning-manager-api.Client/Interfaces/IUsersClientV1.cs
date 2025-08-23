@@ -24,12 +24,11 @@ public interface IUsersClientV1
     ///     Logins at the system.
     /// </summary>
     /// <param name="request">The request.</param>
-    /// <param name="jwt">The jwt.</param>
     /// <param name="token">The cancellation token.</param>
     /// <returns>The new instance of <see cref="TokenResponseModel" /> if login successfully; otherwise throws ex.</returns>
     /// <exception cref="VersioningManagerApiException{TError}">The server response error.</exception>
     /// <exception cref="VersioningManagerApiException{String}">The internal service error.</exception>
-    Task<TokenResponseModel> LoginAsync(UserLoginModel request, string jwt,
+    Task<TokenResponseModel> LoginAsync(UserLoginModel request,
         CancellationToken token = default);
 
     /// <summary>

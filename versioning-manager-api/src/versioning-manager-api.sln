@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.Mode
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.DbContext", "versioning-manager-api.DbContext\versioning-manager-api.DbContext.csproj", "{796D8F92-0040-467B-B952-E858F123315F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "versioning-manager-api.IntegrationTests", "versioning-manager-api.IntegrationTests\versioning-manager-api.IntegrationTests.csproj", "{07E0F6B8-2459-4E4B-B75D-7C11F8DF9286}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,5 +55,9 @@ Global
 		{796D8F92-0040-467B-B952-E858F123315F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{796D8F92-0040-467B-B952-E858F123315F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{796D8F92-0040-467B-B952-E858F123315F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E0F6B8-2459-4E4B-B75D-7C11F8DF9286}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E0F6B8-2459-4E4B-B75D-7C11F8DF9286}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E0F6B8-2459-4E4B-B75D-7C11F8DF9286}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E0F6B8-2459-4E4B-B75D-7C11F8DF9286}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -17,13 +17,13 @@ public class AppStartingService(
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using IServiceScope scope = scopeFactory.CreateScope();
-        await using VmDatabaseContext db = scope.ServiceProvider.GetRequiredService<VmDatabaseContext>();
-        UserUnits units = scope.ServiceProvider.GetRequiredService<UserUnits>();
+        using var scope = scopeFactory.CreateScope();
+        await using var db = scope.ServiceProvider.GetRequiredService<VmDatabaseContext>();
+        var units = scope.ServiceProvider.GetRequiredService<UserUnits>();
 
         await db.Database.MigrateAsync(cancellationToken);
 
-        OperationResult<DbRole> roleCreateResult = await units.CreateRoleAsync(new CreateRoleModel
+        var roleCreateResult = await units.CreateRoleAsync(new CreateRoleModel
         {
             Name = opts.Value.DefaultRoleName,
             Roles = RolesStorage.Roles.ToArray()

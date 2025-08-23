@@ -19,15 +19,15 @@ public class CryptHelperTests
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-        byte[] keyBytes = new byte[64];
-        byte[] ivBytes = new byte[64];
+        var keyBytes = new byte[64];
+        var ivBytes = new byte[64];
         Random.Shared.NextBytes(keyBytes);
         Random.Shared.NextBytes(ivBytes);
         await Task.WhenAll(File.WriteAllBytesAsync(CryptKeyFilePath1, keyBytes),
             File.WriteAllBytesAsync(CryptIvFilePath1, ivBytes));
 
-        byte[] keyBytes2 = new byte[64];
-        byte[] ivBytes2 = new byte[64];
+        var keyBytes2 = new byte[64];
+        var ivBytes2 = new byte[64];
         Random.Shared.NextBytes(keyBytes2);
         Random.Shared.NextBytes(ivBytes2);
         await Task.WhenAll(File.WriteAllBytesAsync(CryptKeyFilePath2, keyBytes2),
@@ -64,7 +64,7 @@ public class CryptHelperTests
     [TestCaseSource(nameof(GetStrings))]
     public void When_Encrypt_With_SpecifiedParams_Result_CorrectPrefix(string value)
     {
-        string encrypted = cryptHelper.Encrypt(value);
+        var encrypted = cryptHelper.Encrypt(value);
 
         encrypted.StartsWith(Prefix1).Should().BeTrue();
     }
@@ -72,8 +72,8 @@ public class CryptHelperTests
     [TestCaseSource(nameof(GetStrings))]
     public void When_EncryptAndDecrypt_With_SpecifiedParams_Result_Correct(string value)
     {
-        string encrypted = cryptHelper.Encrypt(value);
-        string? decrypted = cryptHelper.Decrypt(encrypted);
+        var encrypted = cryptHelper.Encrypt(value);
+        var decrypted = cryptHelper.Decrypt(encrypted);
 
         decrypted.Should().NotBeNull();
         decrypted.Should().Be(value);
@@ -90,10 +90,10 @@ public class CryptHelperTests
         });
         CryptHelper anotherCryptHelper = new(options);
 
-        string encrypted = cryptHelper.Encrypt(value);
+        var encrypted = cryptHelper.Encrypt(value);
 
 
-        string? decrypted = anotherCryptHelper.Decrypt(encrypted);
+        var decrypted = anotherCryptHelper.Decrypt(encrypted);
 
         encrypted.StartsWith(Prefix2).Should().BeFalse();
         decrypted.Should().BeNull();
@@ -108,7 +108,7 @@ public class CryptHelperTests
 
     private static string GenerateRandomString(int length = 8)
     {
-        byte[] bytes = new byte[length];
+        var bytes = new byte[length];
         Random.Shared.NextBytes(bytes);
         return Convert.ToHexStringLower(bytes);
     }

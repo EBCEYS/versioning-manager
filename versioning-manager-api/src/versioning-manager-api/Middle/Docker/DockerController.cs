@@ -63,8 +63,8 @@ public interface IDockerController : IHostedService
 /// </summary>
 public class DockerController : IDockerController
 {
-    private readonly DockerClient client;
-    private readonly AuthConfig gitAuth;
+    private readonly DockerClient _client;
+    private readonly AuthConfig _gitAuth;
 
     /// <summary>
     ///     Initiates a new instance of <see cref="DockerController" />.
@@ -79,13 +79,13 @@ public class DockerController : IDockerController
                 opts.Value.Credentials.UseTls)
             : new AnonymousCredentials();
 
-        DockerClientConfiguration config = opts.Value.UseDefaultConnection
+        var config = opts.Value.UseDefaultConnection
             ? new DockerClientConfiguration(credentials, opts.Value.ConnectionTimeout)
             : new DockerClientConfiguration(new Uri(opts.Value.DockerHost!), credentials, opts.Value.ConnectionTimeout);
 
-        client = config.CreateClient();
+        _client = config.CreateClient();
 
-        gitAuth = new AuthConfig
+        _gitAuth = new AuthConfig
         {
             ServerAddress = gitOpts.Value.Address,
             Username = gitOpts.Value.Username,
@@ -113,10 +113,10 @@ public class DockerController : IDockerController
     public async Task PullImageFromGitlabAsync(string imageName,
         CancellationToken token = default)
     {
-        await client.Images.CreateImageAsync(new ImagesCreateParameters
+        await _client.Images.CreateImageAsync(new ImagesCreateParameters
         {
             FromImage = imageName
-        }, gitAuth, new Progress<JSONMessage>(), token);
+        }, _gitAuth, new Progress<JSONMessage>(), token);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public class DockerController : IDockerController
     {
         try
         {
-            await client.Images.InspectImageAsync(imageName, token);
+            await _client.Images.InspectImageAsync(imageName, token);
             return true;
         }
         catch (DockerImageNotFoundException)
@@ -150,7 +150,7 @@ public class DockerController : IDockerController
     /// <returns>A <see cref="Stream" /> with image archive file.</returns>
     public async Task<Stream> GetImageFileAsync(string imageName, CancellationToken token = default)
     {
-        return await client.Images.SaveImageAsync(imageName, token);
+        return await _client.Images.SaveImageAsync(imageName, token);
     }
 
     /// <summary>
@@ -160,7 +160,7 @@ public class DockerController : IDockerController
     /// <param name="token">The cancellation token.</param>
     public async Task RemoveImageAsync(string imageName, CancellationToken token = default)
     {
-        await client.Images.DeleteImageAsync(imageName, new ImageDeleteParameters
+        await _client.Images.DeleteImageAsync(imageName, new ImageDeleteParameters
         {
             Force = true
         }, token);
@@ -173,7 +173,7 @@ public class DockerController : IDockerController
     /// <returns>The <see cref="ImagesListResponse" /> collection.</returns>
     public Task<IList<ImagesListResponse>> GetImagesAsync(CancellationToken token = default)
     {
-        return client.Images.ListImagesAsync(new ImagesListParameters
+        return _client.Images.ListImagesAsync(new ImagesListParameters
         {
             All = true
         }, token);
@@ -186,7 +186,8 @@ public class DockerController : IDockerController
     /// <param name="token">The cancellation token.</param>
     public Task UploadImageAsync(Stream imageStream, CancellationToken token = default)
     {
-        return client.Images.LoadImageAsync(new ImageLoadParameters(), imageStream, new Progress<JSONMessage>(), token);
+        return _client.Images.LoadImageAsync(new ImageLoadParameters(), imageStream, new Progress<JSONMessage>(),
+            token);
     }
 }
 

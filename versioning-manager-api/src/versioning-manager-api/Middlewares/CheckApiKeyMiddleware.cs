@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Primitives;
 using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Routes.StaticStorages;
-using versioning_manager_api.SystemObjects;
 
 namespace versioning_manager_api.Middlewares;
 
@@ -15,14 +13,14 @@ public class CheckApiKeyMiddleware : IMiddleware
     /// <inheritdoc />
     public async Task InvokeAsync(HttpContext ctx, RequestDelegate next)
     {
-        if (ctx.Request.Headers.TryGetValue(ApikeyStorage.ApikeyHeader, out StringValues key))
+        if (ctx.Request.Headers.TryGetValue(ApikeyStorage.ApikeyHeader, out var key))
         {
-            ILogger<CheckApiKeyMiddleware> logger =
+            var logger =
                 ctx.RequestServices.GetRequiredService<ILogger<CheckApiKeyMiddleware>>();
-            using IDisposable? scope = logger.BeginScope("Request with api key");
+            using var scope = logger.BeginScope("Request with api key");
 
-            IApiKeyProcessor keyProcessor = ctx.RequestServices.GetRequiredService<IApiKeyProcessor>();
-            string? firstEntryKey = key.FirstOrDefault();
+            var keyProcessor = ctx.RequestServices.GetRequiredService<IApiKeyProcessor>();
+            var firstEntryKey = key.FirstOrDefault();
             if (firstEntryKey == null)
             {
                 logger.LogWarning("Unsuccessful api key decryption");
@@ -30,7 +28,7 @@ public class CheckApiKeyMiddleware : IMiddleware
                 return;
             }
 
-            (ApiKeyValidationResult, ApiKeyEntity?) validationResult = await keyProcessor.ValidateAsync(firstEntryKey,
+            var validationResult = await keyProcessor.ValidateAsync(firstEntryKey,
                 ctx.RequestServices.GetRequiredService<VmDatabaseContext>(),
                 ctx.RequestServices.GetRequiredService<IHashHelper>());
             if (validationResult.Item1 != ApiKeyValidationResult.Valid || validationResult.Item2 == null)

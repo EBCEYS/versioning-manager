@@ -22,7 +22,7 @@ public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerCo
     /// <returns><see cref="Stream" /> with image tar archive if exists; otherwise <c>null</c>.</returns>
     public async Task<Stream?> GetImageFileAsync(int id, CancellationToken token = default)
     {
-        DbImageInfo? image = await db.Images.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id, token);
+        var image = await db.Images.AsNoTracking().FirstOrDefaultAsync(i => i.Id == id, token);
         if (image == null) return null;
 
         await docker.PullImageFromGitlabAsync(image.ImageTag, token);
@@ -40,21 +40,21 @@ public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerCo
     public async Task<OperationResult> UploadImageInfoAsync(UploadImageInfoModel model, Guid creatorId,
         CancellationToken token = default)
     {
-        DbDevice? device = await db.Devices.FirstOrDefaultAsync(d => d.Id == creatorId, token);
+        var device = await db.Devices.FirstOrDefaultAsync(d => d.Id == creatorId, token);
         if (device == null) return OperationResult.Failure;
 
-        DbProject? project =
+        var project =
             await db.Projects.Include(p => p.Entries)
                 .FirstOrDefaultAsync(p => p.Name == model.ProjectName.ToLowerInvariant(), token);
 
-        DbProjectEntry? entry = project?.Entries?.FirstOrDefault(e => e.IsActual);
+        var entry = project?.Entries?.FirstOrDefault(e => e.IsActual);
         if (entry == null) return OperationResult.NotFound;
 
         IEnumerable<DbImageInfo> imagesFromService = await db.Images
             .Where(i => i.ProjectId == entry.Id && i.ServiceName == model.ServiceName).ToListAsync(token);
-        foreach (DbImageInfo imageInfo in imagesFromService) imageInfo.IsActive = false;
+        foreach (var imageInfo in imagesFromService) imageInfo.IsActive = false;
 
-        DbImageInfo? image =
+        var image =
             imagesFromService.FirstOrDefault(i => i.ImageTag == model.ImageTag);
 
         await docker.PullImageFromGitlabAsync(model.ImageTag, token);
@@ -97,7 +97,7 @@ public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerCo
     public async Task<DeviceProjectInfoResponse> GetProjectInfoAsync(string projectName,
         CancellationToken token = default)
     {
-        List<DbProjectEntry> entry = await db.ProjectEntries
+        var entry = await db.ProjectEntries
             .Include(e => e.Project)
             .Include(e => e.Images.Where(i => i.IsActive))
             .AsNoTracking()
@@ -126,7 +126,7 @@ public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerCo
     /// <returns><see cref="Stream" /> of docker-compose file if project entry exists; otherwise <c>null</c>.</returns>
     public async Task<Stream?> GetProjectDockerComposeAsync(int projectEntryId, CancellationToken token = default)
     {
-        List<DbImageInfo> images = await db.Images
+        var images = await db.Images
             .Include(i => i.Project)
             .AsNoTracking()
             .Where(i => i.ProjectId == projectEntryId && i.Project.IsActual && i.IsActive)

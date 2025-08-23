@@ -23,13 +23,13 @@ public class DockerComposeHelperTests
         ];
 
 
-        using Stream result = dcHelper.GetTotalCompose(dockerComposeFiles);
-        string totalDockerCompose = GetString(result);
+        using var result = dcHelper.GetTotalCompose(dockerComposeFiles);
+        var totalDockerCompose = GetString(result);
 
-        string[] lines = totalDockerCompose.Split("\n").Where(l => !string.IsNullOrEmpty(l.Replace("...", "").Trim()))
+        var lines = totalDockerCompose.Split("\n").Where(l => !string.IsNullOrEmpty(l.Replace("...", "").Trim()))
             .ToArray();
         lines.Length.Should().Be(3);
-        int count = lines.Count(line => line.Contains("version: \"3.8\""));
+        var count = lines.Count(line => line.Contains("version: \"3.8\""));
         count.Should().Be(1);
     }
 
@@ -44,12 +44,12 @@ public class DockerComposeHelperTests
         ];
 
 
-        using Stream result = dcHelper.GetTotalCompose(dockerComposeFiles);
-        string totalDockerCompose = GetString(result);
+        using var result = dcHelper.GetTotalCompose(dockerComposeFiles);
+        var totalDockerCompose = GetString(result);
 
-        string[] lines = totalDockerCompose.Split("\n").Where(l => !string.IsNullOrEmpty(l.Replace("...", "").Trim()))
+        var lines = totalDockerCompose.Split("\n").Where(l => !string.IsNullOrEmpty(l.Replace("...", "").Trim()))
             .ToArray();
-        int count = lines.Count(line => line.Contains("http-receiver-v2-c"));
+        var count = lines.Count(line => line.Contains("http-receiver-v2-c"));
         count.Should().Be(2);
     }
 
@@ -64,12 +64,12 @@ public class DockerComposeHelperTests
         ];
 
 
-        using Stream result = dcHelper.GetTotalCompose(dockerComposeFiles);
-        string totalDockerCompose = GetString(result);
+        using var result = dcHelper.GetTotalCompose(dockerComposeFiles);
+        var totalDockerCompose = GetString(result);
 
-        string[] lines = totalDockerCompose.Split("\n").Where(l => !string.IsNullOrEmpty(l.Replace("...", "").Trim()))
+        var lines = totalDockerCompose.Split("\n").Where(l => !string.IsNullOrEmpty(l.Replace("...", "").Trim()))
             .ToArray();
-        int count = lines.Count(line => line.Contains("networks:"));
+        var count = lines.Count(line => line.Contains("networks:"));
         count.Should().Be(1);
     }
 

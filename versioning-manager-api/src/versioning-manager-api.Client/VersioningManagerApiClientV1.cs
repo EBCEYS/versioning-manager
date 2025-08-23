@@ -11,6 +11,11 @@ namespace versioning_manager_api.Client;
 public class VersioningManagerApiClientV1(string serverAddress, ClientsTimeouts? timeouts = null)
 {
     /// <summary>
+    ///     The base service address.
+    /// </summary>
+    public string BaseAddress { get; init; } = serverAddress;
+
+    /// <summary>
     ///     The device administration client. The jwt require.
     ///     <br />
     ///     Client for device manipulation. Create, delete etc.
@@ -35,23 +40,10 @@ public class VersioningManagerApiClientV1(string serverAddress, ClientsTimeouts?
         new ProjectClientV1(serverAddress, timeouts?.ProjectClientTimeout);
 
     /// <summary>
-    ///     The users client. The jwt require for all methods except login.
+    ///     The users' client. The jwt require for all methods except login.
     ///     <br />
     ///     Client for users and roles manipulations.
     /// </summary>
     public IUsersClientV1 UsersClient { get; } =
         new UsersClientV1(serverAddress, timeouts?.UsersClientTimeout);
 }
-
-/// <summary>
-///     The <see cref="ClientsTimeouts" /> record.
-/// </summary>
-/// <param name="DeviceAdministrationClientTimeout">The timeout for <see cref="IDeviceAdministrationClientV1" />.</param>
-/// <param name="ProjectClientTimeout">The timeout for <see cref="IProjectClientV1" />.</param>
-/// <param name="ProjectAdministrationClientTimeout">The timeout for <see cref="IProjectAdministrationClientV1" />.</param>
-/// <param name="UsersClientTimeout">The timeout for <see cref="IUsersClientV1" />.</param>
-public record ClientsTimeouts(
-    TimeSpan? DeviceAdministrationClientTimeout = null,
-    TimeSpan? ProjectClientTimeout = null,
-    TimeSpan? ProjectAdministrationClientTimeout = null,
-    TimeSpan? UsersClientTimeout = null);

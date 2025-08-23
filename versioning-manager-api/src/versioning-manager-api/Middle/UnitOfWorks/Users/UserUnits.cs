@@ -13,16 +13,16 @@ public class UserUnits(VmDatabaseContext db)
     public async Task<OperationResult<DbUser>> CreateUserIfNotExistsAsync(UserCreationApiModel model,
         IHashHelper hasher, CancellationToken token = default)
     {
-        string username = model.Username.ToLowerInvariant();
+        var username = model.Username.ToLowerInvariant();
         DbUser? user = await db.Users.FirstOrDefaultAsync(u => u.Username == username, token);
         if (user != null) return OperationResult<DbUser>.ConflictResult(null);
 
-        string? roleName = model.Role?.ToLowerInvariant();
+        var roleName = model.Role?.ToLowerInvariant();
         DbRole? role = roleName != null
             ? await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, token)
             : null;
 
-        string salt = hasher.GenerateSalt();
+        var salt = hasher.GenerateSalt();
         user = new DbUser
         {
             Username = username,
@@ -42,12 +42,12 @@ public class UserUnits(VmDatabaseContext db)
     public async Task<OperationResult<DbUser?>> LoginUserAsync(UserLoginModel model, IHashHelper hasher,
         CancellationToken token = default)
     {
-        string username = model.Username.ToLowerInvariant();
+        var username = model.Username.ToLowerInvariant();
         DbUser? user = await db.Users.Include(u => u.Role).AsNoTracking()
             .FirstOrDefaultAsync(u => u.Username == username && u.IsActive, token);
         if (user == null) return OperationResult<DbUser?>.NotFoundResult(null);
 
-        string hashedPassword = hasher.Hash(model.Password, user.Salt);
+        var hashedPassword = hasher.Hash(model.Password, user.Salt);
         return user.Password == hashedPassword
             ? OperationResult<DbUser?>.SuccessResult(user)
             : OperationResult<DbUser?>.FailureResult(null);
@@ -55,7 +55,7 @@ public class UserUnits(VmDatabaseContext db)
 
     public async Task<OperationResult<DbRole>> CreateRoleAsync(CreateRoleModel model, CancellationToken token = default)
     {
-        string roleName = model.Name.ToLowerInvariant();
+        var roleName = model.Name.ToLowerInvariant();
         DbRole? role = await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, token);
         if (role != null) return OperationResult<DbRole>.ConflictResult(null);
 
@@ -95,7 +95,7 @@ public class UserUnits(VmDatabaseContext db)
     public async Task<OperationResult> DeleteRoleAsync(string roleName, CancellationToken token = default)
     {
         roleName = roleName.ToLowerInvariant();
-        int count = await db.Roles.Where(r => r.Name == roleName).ExecuteDeleteAsync(token);
+        var count = await db.Roles.Where(r => r.Name == roleName).ExecuteDeleteAsync(token);
         return count > 0 ? OperationResult.Success : OperationResult.NotFound;
     }
 
@@ -103,7 +103,7 @@ public class UserUnits(VmDatabaseContext db)
         CancellationToken token = default)
     {
         roleName = roleName.ToLowerInvariant();
-        int count = await db.Roles.Where(r => r.Name == roleName)
+        var count = await db.Roles.Where(r => r.Name == roleName)
             .ExecuteUpdateAsync(sp => sp.SetProperty(r => r.Roles, newRoles), token);
         return count > 0 ? OperationResult.Success : OperationResult.NotFound;
     }
@@ -132,7 +132,7 @@ public class UserUnits(VmDatabaseContext db)
         CancellationToken token = default)
     {
         username = username.ToLowerInvariant();
-        int count = await db.Users.Where(u => u.Username == username)
+        var count = await db.Users.Where(u => u.Username == username)
             .ExecuteUpdateAsync(sp => sp.SetProperty(u => u.IsActive, isActive), token);
         return count > 0 ? OperationResult.Success : OperationResult.NotFound;
     }

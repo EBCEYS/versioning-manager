@@ -59,12 +59,12 @@ public class UsersController(
     {
         if (!model.Validate()) return Problem("Incorrect params!", GetType().Name, 400);
 
-        using IDisposable? scope = logger.BeginScope("User {creator} try to create new user", User.GetUserName());
+        using var scope = logger.BeginScope("User {creator} try to create new user", User.GetUserName());
 
         logger.LogDebug("Try create new user {username}", model.Username);
         try
         {
-            OperationResult<DbUser> result = await units.CreateUserIfNotExistsAsync(model, hasher);
+            var result = await units.CreateUserIfNotExistsAsync(model, hasher);
             switch (result.Result)
             {
                 case OperationResult.Success:
@@ -97,13 +97,13 @@ public class UsersController(
     [ProducesResponseType<TokenResponseModel>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> LoginAsync([Required] [FromBody] UserLoginModel model)
+    public async Task<IActionResult> LoginAsync([Required] [FromBody] UserLoginModel model) //TODO: add refresh
     {
-        using IDisposable? scope = logger.BeginScope("Try login user {name}", model.Username);
+        using var scope = logger.BeginScope("Try login user {name}", model.Username);
         logger.LogInformation("Try login user {name}", model.Username);
         try
         {
-            OperationResult<DbUser?> user = await units.LoginUserAsync(model, hasher);
+            var user = await units.LoginUserAsync(model, hasher);
             if (user.IsNotFound() || user.Object == null) return NotFoundProblem("User");
 
             if (!user.IsSuccess())
@@ -112,8 +112,8 @@ public class UsersController(
                 return InternalError();
             }
 
-            string sessionId = Guid.NewGuid().ToString("N");
-            string token = GenerateJwt(user.Object.Username, user.Object.Role?.Roles, sessionId);
+            var sessionId = Guid.NewGuid().ToString("N");
+            var token = GenerateJwt(user.Object.Username, user.Object.Role?.Roles, sessionId);
             TokenResponseModel response = new(user.Object.Username, token, sessionId, user.Object.Role?.Roles,
                 jwtOpts.Value.TokenTimeToLive);
 
@@ -151,10 +151,10 @@ public class UsersController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateRoleAsync([Required] [FromBody] CreateRoleModel model)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {user} try create role {name}", username, model.Name);
+        using var scope = logger.BeginScope("User {user} try create role {name}", username, model.Name);
         if (model.Roles.Length == 0 || !model.Roles.All(s => RolesStorage.Roles.Contains(s)))
         {
             logger.LogWarning("Tried to create invalid role with roles: {roles}", string.Join(',', model.Roles));
@@ -164,7 +164,7 @@ public class UsersController(
 
         try
         {
-            OperationResult<DbRole> creationResult = await units.CreateRoleAsync(model);
+            var creationResult = await units.CreateRoleAsync(model);
             switch (creationResult.Result)
             {
                 case OperationResult.Success:
@@ -202,10 +202,10 @@ public class UsersController(
         string username,
         [Required] [FromBody] ChangePasswordModel model)
     {
-        using IDisposable? scope = logger.BeginScope("Try change password for user {username}", username);
+        using var scope = logger.BeginScope("Try change password for user {username}", username);
         try
         {
-            OperationResult<object> result =
+            var result =
                 await units.ChangePasswordAsync(username, model, hasher, HttpContext.RequestAborted);
             switch (result.Result)
             {
@@ -246,7 +246,7 @@ public class UsersController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ChangeSelfPassword([Required] [FromBody] ChangePasswordModel model)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
         logger.LogInformation("Try self change password for user {username}", username);
@@ -314,14 +314,14 @@ public class UsersController(
         [Required] [FromQuery] [MaxLength(FieldsLimits.MaxPasswordLength)]
         string newRole)
     {
-        string? updater = User.GetUserName();
+        var updater = User.GetUserName();
         if (updater == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {updater} try change user {username} role to {role}",
+        using var scope = logger.BeginScope("User {updater} try change user {username} role to {role}",
             updater, username, newRole);
         try
         {
-            OperationResult result = await units.ChangeUserRoleAsync(username, newRole, HttpContext.RequestAborted);
+            var result = await units.ChangeUserRoleAsync(username, newRole, HttpContext.RequestAborted);
             switch (result)
             {
                 case OperationResult.Success:
@@ -360,13 +360,13 @@ public class UsersController(
         [Required] [FromQuery] [MaxLength(FieldsLimits.MaxRoleName)]
         string role)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try delete role {role}", username, role);
+        using var scope = logger.BeginScope("User {username} try delete role {role}", username, role);
         try
         {
-            OperationResult result = await units.DeleteRoleAsync(role, HttpContext.RequestAborted);
+            var result = await units.DeleteRoleAsync(role, HttpContext.RequestAborted);
             switch (result)
             {
                 case OperationResult.Success:
@@ -407,10 +407,10 @@ public class UsersController(
         [Required] [FromBody] [MaxLength(RolesStorage.Count)]
         IEnumerable<string> newRoles)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try to update role {role}", username, role);
+        using var scope = logger.BeginScope("User {username} try to update role {role}", username, role);
 
         IEnumerable<string> enumerable = newRoles as string[] ?? newRoles.ToArray();
         if (!enumerable.All(s => RolesStorage.Roles.Contains(s)))
@@ -422,7 +422,7 @@ public class UsersController(
 
         try
         {
-            OperationResult result = await units.UpdateRoleAsync(role, enumerable, HttpContext.RequestAborted);
+            var result = await units.UpdateRoleAsync(role, enumerable, HttpContext.RequestAborted);
             switch (result)
             {
                 case OperationResult.Success:
@@ -460,14 +460,14 @@ public class UsersController(
         [Required] [FromQuery] [MaxLength(FieldsLimits.MaxUsernameLength)]
         string username)
     {
-        string? updater = User.GetUserName();
+        var updater = User.GetUserName();
         if (updater == null) return WrongUserNameProblem();
 
-        using IDisposable? scope =
+        using var scope =
             logger.BeginScope("User {updater} try delete user {username}", updater, username);
         try
         {
-            OperationResult result =
+            var result =
                 await units.UpdateUserIsActiveAsync(username, false, HttpContext.RequestAborted);
             switch (result)
             {
@@ -506,14 +506,14 @@ public class UsersController(
         [Required] [FromQuery] [MaxLength(FieldsLimits.MaxUsernameLength)]
         string username)
     {
-        string? updater = User.GetUserName();
+        var updater = User.GetUserName();
         if (updater == null) return WrongUserNameProblem();
 
-        using IDisposable? scope =
+        using var scope =
             logger.BeginScope("User {updater} try delete user {username}", updater, username);
         try
         {
-            OperationResult result =
+            var result =
                 await units.UpdateUserIsActiveAsync(username, true, HttpContext.RequestAborted);
             switch (result)
             {
@@ -598,7 +598,7 @@ public class UsersController(
                             $"If use {UsersSearchType.One} the {nameof(username)} property should be set!",
                             GetType().Name, 400, "Incorrect params!");
 
-                    DbUser? user = await units.GetUserAsync(username, HttpContext.RequestAborted);
+                    var user = await units.GetUserAsync(username, HttpContext.RequestAborted);
                     result = user != null ? [user] : [];
                     break;
                 default:

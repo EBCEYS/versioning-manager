@@ -29,7 +29,7 @@ public class CryptHelper : ICryptHelper
 
     public string Encrypt(string text)
     {
-        using Aes aes = Aes.Create();
+        using var aes = Aes.Create();
         aes.Key = key;
         aes.IV = iv;
 
@@ -46,11 +46,11 @@ public class CryptHelper : ICryptHelper
     public string? Decrypt(string text)
     {
         if (!text.StartsWith(prefix)) return null;
-        using Aes aes = Aes.Create();
+        using var aes = Aes.Create();
         aes.Key = key;
         aes.IV = iv;
 
-        using ICryptoTransform decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+        using var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
         using MemoryStream ms = new(Convert.FromBase64String(text[prefix.Length..]));
         using CryptoStream cs = new(ms, decryptor, CryptoStreamMode.Read);
         using StreamReader sr = new(cs);

@@ -4,7 +4,6 @@ using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.CryptsProcess;
 using versioning_manager_api.Middle.HashProcess;
-using versioning_manager_api.SystemObjects;
 using versioning_manager_api.SystemObjects.Options;
 using versioning_manager_api.UnitTests.Mocks;
 
@@ -23,8 +22,8 @@ public class ApiKeyProcessorTests
     [OneTimeSetUp]
     public async Task OneTimeSetup()
     {
-        byte[] keyBytes = new byte[64];
-        byte[] ivBytes = new byte[64];
+        var keyBytes = new byte[64];
+        var ivBytes = new byte[64];
         Random.Shared.NextBytes(keyBytes);
         Random.Shared.NextBytes(ivBytes);
         await Task.WhenAll(File.WriteAllBytesAsync(CryptKeyFilePath, keyBytes),
@@ -64,9 +63,9 @@ public class ApiKeyProcessorTests
     [TestCaseSource(nameof(GetDataForTests))]
     public void When_SomeEntityKeyed_With_SpecifiedParams_Result_Success(Guid id, string source, DateTimeOffset expires)
     {
-        string apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = apiKeyProcessor.Generate(id, source, expires);
 
-        ApiKeyEntity? entity = apiKeyProcessor.Decrypt(apiKey);
+        var entity = apiKeyProcessor.Decrypt(apiKey);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         entity.Should().NotBeNull();
@@ -88,13 +87,13 @@ public class ApiKeyProcessorTests
     public async Task When_ValidateSomeEntity_With_SpecifiedParams_Result_Valid(Guid id, string source,
         DateTimeOffset expires)
     {
-        string apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = apiKeyProcessor.Generate(id, source, expires);
 
-        string salt = hashHelper.GenerateSalt();
+        var salt = hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, source, expires, salt, apiKey);
 
-        (ApiKeyValidationResult, ApiKeyEntity?) result =
+        var result =
             await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
@@ -113,13 +112,13 @@ public class ApiKeyProcessorTests
     public async Task When_ValidateSomeEntity_With_SpecifiedParams_Result_InValid(Guid id, string source,
         DateTimeOffset expires)
     {
-        string apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = apiKeyProcessor.Generate(id, source, expires);
 
-        string salt = hashHelper.GenerateSalt();
+        var salt = hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, source, expires, salt, apiKey);
 
-        (ApiKeyValidationResult, ApiKeyEntity?) result =
+        var result =
             await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
@@ -140,16 +139,16 @@ public class ApiKeyProcessorTests
     [Test]
     public async Task When_ValidateEntity_With_WrongSource_Result_Invalid()
     {
-        Guid id = Guid.NewGuid();
-        string source = "someSource";
-        DateTimeOffset expires = DateTimeOffset.Now;
-        string apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var id = Guid.NewGuid();
+        var source = "someSource";
+        var expires = DateTimeOffset.Now;
+        var apiKey = apiKeyProcessor.Generate(id, source, expires);
 
-        string salt = hashHelper.GenerateSalt();
+        var salt = hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, "AnotherSalt", expires, salt, apiKey);
 
-        (ApiKeyValidationResult, ApiKeyEntity?) result =
+        var result =
             await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
@@ -160,16 +159,16 @@ public class ApiKeyProcessorTests
     [Test]
     public async Task When_ValidateEntity_With_WrongApikey_Result_Invalid()
     {
-        Guid id = Guid.NewGuid();
-        string source = "someSource";
-        DateTimeOffset expires = DateTimeOffset.Now;
-        string apiKey = apiKeyProcessor.Generate(id, source, expires) + "some string";
+        var id = Guid.NewGuid();
+        var source = "someSource";
+        var expires = DateTimeOffset.Now;
+        var apiKey = apiKeyProcessor.Generate(id, source, expires) + "some string";
 
-        string salt = hashHelper.GenerateSalt();
+        var salt = hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, source, expires, salt, apiKey);
 
-        (ApiKeyValidationResult, ApiKeyEntity?) result =
+        var result =
             await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
@@ -180,12 +179,12 @@ public class ApiKeyProcessorTests
     [Test]
     public async Task When_ValidateEntity_With_NotFoundDevice_Result_Invalid()
     {
-        Guid id = Guid.NewGuid();
-        string source = "someSource";
-        DateTimeOffset expires = DateTimeOffset.Now;
-        string apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var id = Guid.NewGuid();
+        var source = "someSource";
+        var expires = DateTimeOffset.Now;
+        var apiKey = apiKeyProcessor.Generate(id, source, expires);
 
-        (ApiKeyValidationResult, ApiKeyEntity?) result =
+        var result =
             await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();

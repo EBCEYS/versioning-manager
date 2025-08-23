@@ -23,10 +23,10 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> CreateProjectAsync(string creatorName, string projectName,
         IEnumerable<string> availableSources, CancellationToken token = default)
     {
-        DbUser? creator = await db.Users.FirstOrDefaultAsync(u => u.Username == creatorName.ToLowerInvariant(), token);
+        var creator = await db.Users.FirstOrDefaultAsync(u => u.Username == creatorName.ToLowerInvariant(), token);
         if (creator == null) return OperationResult.NotFound;
 
-        DbProject? project =
+        var project =
             await db.Projects.FirstOrDefaultAsync(p => p.Name == projectName.ToLowerInvariant(), token);
         if (project != null) return OperationResult.Conflict;
 
@@ -53,19 +53,19 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> CreateProjectEntryAsync(string creatorUsername, string projectName,
         string version, bool isActual, CancellationToken token = default)
     {
-        DbUser? user = await db.Users.FirstOrDefaultAsync(u => u.Username == creatorUsername.ToLowerInvariant(), token);
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Username == creatorUsername.ToLowerInvariant(), token);
         if (user == null) return OperationResult.NotFound;
 
-        DbProject? project = await db.Projects.Include(p => p.Entries)
+        var project = await db.Projects.Include(p => p.Entries)
             .FirstOrDefaultAsync(p => p.Name == projectName.ToLowerInvariant(), token);
         if (project == null) return OperationResult.NotFound;
 
         if (project.Entries?.Any(e => e.Version == version.ToLowerInvariant()) ?? false)
             return OperationResult.Conflict;
 
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         if (isActual && project.Entries != null)
-            foreach (DbProjectEntry existingEntry in project.Entries)
+            foreach (var existingEntry in project.Entries)
             {
                 existingEntry.IsActual = false;
                 existingEntry.LastUpdateUTC = now;
@@ -104,7 +104,7 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
         bool onlyActual,
         CancellationToken token = default)
     {
-        DbProject? project = await db.Projects.AsNoTracking()
+        var project = await db.Projects.AsNoTracking()
             .FirstOrDefaultAsync(p => p.Name == projectName.ToLowerInvariant(), token);
         if (project == null) return OperationResult<IEnumerable<DbProjectEntry>>.NotFoundResult(null);
 
@@ -124,10 +124,10 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> ChangeProjectEntryActualityAsync(int projectEntryId, bool newStatus,
         CancellationToken token = default)
     {
-        DbProjectEntry? entry = await db.ProjectEntries.FirstOrDefaultAsync(e => e.Id == projectEntryId, token);
+        var entry = await db.ProjectEntries.FirstOrDefaultAsync(e => e.Id == projectEntryId, token);
         if (entry == null) return OperationResult.NotFound;
 
-        DateTimeOffset now = DateTimeOffset.UtcNow;
+        var now = DateTimeOffset.UtcNow;
         entry.IsActual = newStatus;
         entry.LastUpdateUTC = now;
 
@@ -153,7 +153,7 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> MigrateProjectEntryToNewWithNewVersion(int projectEntryId, string newVersion,
         CancellationToken token = default)
     {
-        DbProjectEntry? entry = await db.ProjectEntries.Include(e => e.Project).Include(e => e.Images)
+        var entry = await db.ProjectEntries.Include(e => e.Project).Include(e => e.Images)
             .FirstOrDefaultAsync(p => p.Id == projectEntryId, token);
         if (entry == null) return OperationResult.NotFound;
 
@@ -170,7 +170,7 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
         };
 
         if (entry.Images?.Count > 0)
-            foreach (DbImageInfo image in entry.Images)
+            foreach (var image in entry.Images)
                 image.Project = newEntry;
 
         await db.ProjectEntries.AddAsync(newEntry, token);
@@ -188,10 +188,10 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> CopyImagesToNewProjectEntry(int[] images, int projectEntryId,
         CancellationToken token = default)
     {
-        DbProjectEntry? project = await db.ProjectEntries.FirstOrDefaultAsync(p => p.Id == projectEntryId, token);
+        var project = await db.ProjectEntries.FirstOrDefaultAsync(p => p.Id == projectEntryId, token);
         if (project == null) return OperationResult.NotFound;
 
-        List<DbImageInfo> imagesToMigrate = await db.Images.Where(i => images.Contains(i.Id)).ToListAsync(token);
+        var imagesToMigrate = await db.Images.Where(i => images.Contains(i.Id)).ToListAsync(token);
         if (imagesToMigrate.Count != images.Length) return OperationResult.Failure;
 
         List<DbImageInfo> newImages = [];
@@ -236,8 +236,8 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> UpdateProjectAvailableSources(int projectId, IEnumerable<string> newSources,
         CancellationToken token = default)
     {
-        string[] hashedSources = newSources.Select(newS => newS.ToLowerInvariant()).ToArray();
-        int count = await db.Projects.Where(p => p.Id == projectId)
+        var hashedSources = newSources.Select(newS => newS.ToLowerInvariant()).ToArray();
+        var count = await db.Projects.Where(p => p.Id == projectId)
             .ExecuteUpdateAsync(
                 s => s.SetProperty(p => p.AvailableSources,
                     hashedSources),
@@ -255,7 +255,7 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
     public async Task<OperationResult> ChangeImageActivityAsync(int id, bool newState,
         CancellationToken token = default)
     {
-        DbImageInfo? image = await db.Images.FirstOrDefaultAsync(i => i.Id == id, token);
+        var image = await db.Images.FirstOrDefaultAsync(i => i.Id == id, token);
         if (image == null) return OperationResult.NotFound;
 
         image.IsActive = newState;

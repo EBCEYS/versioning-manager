@@ -60,7 +60,7 @@ public class ProjectController : ControllerBase
     {
         try
         {
-            Stream? imageStream = await unit.GetImageFileAsync(id, HttpContext.RequestAborted);
+            var imageStream = await unit.GetImageFileAsync(id, HttpContext.RequestAborted);
             if (imageStream == null) return NotFoundProblem("Image");
 
             return File(imageStream, "application/x-tar");
@@ -93,11 +93,11 @@ public class ProjectController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UploadImageAsync([Required] IFormFile file)
     {
-        ApiKeyEntity requester = Requester;
-        using IDisposable? scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
+        var requester = Requester;
+        using var scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
         try
         {
-            Stream imageStream = file.OpenReadStream();
+            var imageStream = file.OpenReadStream();
             imageStream.Seek(0, SeekOrigin.Begin);
             await unit.UploadImageAsync(imageStream, HttpContext.RequestAborted);
             return Ok();
@@ -124,11 +124,11 @@ public class ProjectController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UploadImageInfoAsync([Required] [FromBody] UploadImageInfoModel model)
     {
-        ApiKeyEntity requester = Requester;
-        using IDisposable? scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
+        var requester = Requester;
+        using var scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
         try
         {
-            OperationResult result =
+            var result =
                 await unit.UploadImageInfoAsync(model, requester.DeviceId, HttpContext.RequestAborted);
             switch (result)
             {
@@ -175,7 +175,7 @@ public class ProjectController : ControllerBase
     {
         try
         {
-            DeviceProjectInfoResponse info = await unit.GetProjectInfoAsync(name, HttpContext.RequestAborted);
+            var info = await unit.GetProjectInfoAsync(name, HttpContext.RequestAborted);
             return !info.ActualEntries.Any() ? NotFoundProblem("Actual project") : Ok(info);
         }
         catch (Exception ex)
@@ -198,10 +198,10 @@ public class ProjectController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProjectCompose([Required] [FromRoute] int id)
     {
-        using IDisposable? scope = logger.BeginScope("Device {id} requested docker-compose file", Requester.DeviceId);
+        using var scope = logger.BeginScope("Device {id} requested docker-compose file", Requester.DeviceId);
         try
         {
-            Stream? result = await unit.GetProjectDockerComposeAsync(id, HttpContext.RequestAborted);
+            var result = await unit.GetProjectDockerComposeAsync(id, HttpContext.RequestAborted);
             if (result == null) return NotFoundProblem("Project entry");
 
             result.Seek(0, SeekOrigin.Begin);

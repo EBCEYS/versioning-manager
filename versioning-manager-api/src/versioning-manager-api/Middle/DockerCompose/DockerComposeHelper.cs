@@ -16,13 +16,13 @@ public class DockerComposeHelper
     {
         YamlMappingNode mergedRoot = new();
 
-        foreach (string file in composes)
+        foreach (var file in composes)
         {
             if (string.IsNullOrWhiteSpace(file))
                 continue;
             YamlStream yaml = [];
             yaml.Load(new StringReader(file));
-            YamlMappingNode rootNode = (YamlMappingNode)yaml.Documents[0].RootNode;
+            var rootNode = (YamlMappingNode)yaml.Documents[0].RootNode;
 
             MergeNodes(mergedRoot, rootNode);
         }
@@ -36,12 +36,12 @@ public class DockerComposeHelper
 
     private static void MergeNodes(YamlMappingNode target, YamlMappingNode source)
     {
-        foreach (KeyValuePair<YamlNode, YamlNode> sourceEntry in source.Children)
+        foreach (var sourceEntry in source.Children)
         {
-            YamlScalarNode key = (YamlScalarNode)sourceEntry.Key;
-            YamlNode sourceValue = sourceEntry.Value;
+            var key = (YamlScalarNode)sourceEntry.Key;
+            var sourceValue = sourceEntry.Value;
 
-            if (target.Children.TryGetValue(key, out YamlNode? existingValue))
+            if (target.Children.TryGetValue(key, out var existingValue))
                 switch (existingValue)
                 {
                     case YamlMappingNode existingMapping when sourceValue is YamlMappingNode sourceMapping:
@@ -61,12 +61,12 @@ public class DockerComposeHelper
 
     private static void MergeMappings(YamlMappingNode target, YamlMappingNode source)
     {
-        foreach (KeyValuePair<YamlNode, YamlNode> sourceEntry in source.Children)
+        foreach (var sourceEntry in source.Children)
         {
-            YamlScalarNode key = (YamlScalarNode)sourceEntry.Key;
-            YamlNode sourceValue = sourceEntry.Value;
+            var key = (YamlScalarNode)sourceEntry.Key;
+            var sourceValue = sourceEntry.Value;
 
-            if (target.Children.TryGetValue(key, out YamlNode? existingValue))
+            if (target.Children.TryGetValue(key, out var existingValue))
                 switch (existingValue)
                 {
                     case YamlMappingNode existingMapping when sourceValue is YamlMappingNode sourceMapping:
@@ -86,7 +86,7 @@ public class DockerComposeHelper
 
     private static void MergeSequences(YamlSequenceNode target, YamlSequenceNode source)
     {
-        foreach (YamlNode item in source.Children) target.Children.Add(item);
+        foreach (var item in source.Children) target.Children.Add(item);
     }
 }
 

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using MockQueryable.NSubstitute;
 using NSubstitute;
 using versioning_manager_api.DbContext.DevDatabase;
@@ -16,19 +15,19 @@ public class VmDatabaseDbContextMockHelper
 
     public VmDatabaseContext Initialize()
     {
-        VmDatabaseContext dbContext = Substitute.For<VmDatabaseContext>();
+        var dbContext = Substitute.For<VmDatabaseContext>();
 
-        DbSet<DbDevice> devices = Devices.BuildMockDbSet();
+        var devices = Devices.BuildMockDbSet();
         dbContext.Devices.Returns(devices);
-        DbSet<DbRole> roles = Roles.BuildMockDbSet();
+        var roles = Roles.BuildMockDbSet();
         dbContext.Roles.Returns(roles);
-        DbSet<DbUser> users = Users.BuildMockDbSet();
+        var users = Users.BuildMockDbSet();
         dbContext.Users.Returns(users);
-        DbSet<DbProject> projects = Projects.BuildMockDbSet();
+        var projects = Projects.BuildMockDbSet();
         dbContext.Projects.Returns(projects);
-        DbSet<DbProjectEntry> projectEntries = ProjectEntries.BuildMockDbSet();
+        var projectEntries = ProjectEntries.BuildMockDbSet();
         dbContext.ProjectEntries.Returns(projectEntries);
-        DbSet<DbImageInfo> images = Images.BuildMockDbSet();
+        var images = Images.BuildMockDbSet();
         dbContext.Images.Returns(images);
 
         return dbContext;

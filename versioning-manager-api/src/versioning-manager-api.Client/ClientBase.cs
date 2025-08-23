@@ -36,11 +36,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         Dictionary<string, object>? headers = null,
         CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response = await request.AllowAnyHttpStatus().GetAsync(cancellationToken: token);
+        var response = await request.AllowAnyHttpStatus().GetAsync(cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
     }
@@ -61,11 +60,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task<Stream> GetStreamAsync<TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().GetAsync(HttpCompletionOption.ResponseHeadersRead, token);
 
         if (response.ResponseMessage.IsSuccessStatusCode)
@@ -100,11 +98,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest? requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().PostJsonAsync(requestObject, cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
@@ -128,11 +125,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest? requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().PostJsonAsync(requestObject, cancellationToken: token);
 
         await ProcessResponse<TError>(response, token);
@@ -158,11 +154,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().PutJsonAsync(requestObject, cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
@@ -186,11 +181,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().PutJsonAsync(requestObject, cancellationToken: token);
 
         await ProcessResponse<TError>(response, token);
@@ -211,11 +205,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task PutAsync<TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().PutAsync(cancellationToken: token);
 
         await ProcessResponse<TError>(response, token);
@@ -224,7 +217,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     private static Url FormatUri(Action<Url> urlAction, Url url)
     {
         urlAction.Invoke(url);
-        return Url.Encode(url);
+        return url;
     }
 
     /// <summary>
@@ -244,11 +237,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task<TResponse> DeleteJsonAsync<TResponse, TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().DeleteAsync(cancellationToken: token);
 
         return await ProcessResponse<TResponse, TError>(response, token);
@@ -269,11 +261,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task DeleteAsync<TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response =
+        var response =
             await request.AllowAnyHttpStatus().DeleteAsync(cancellationToken: token);
 
         await ProcessResponse<TError>(response, token);
@@ -282,11 +273,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task PostStreamAsync<TError>(Action<Url> urlAction, Stream stream,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        Url url = baseUrl.Clone();
-        url = FormatUri(urlAction, url);
-        FlurlRequest request = PrepareRequest(headers, url);
+        var url = FormatUri(urlAction, baseUrl);
+        var request = PrepareRequest(headers, url);
 
-        IFlurlResponse? response = await request.AllowAnyHttpStatus()
+        var response = await request.AllowAnyHttpStatus()
             .PostAsync(new StreamContent(stream), cancellationToken: token);
 
         await ProcessResponse<TError>(response, token);
@@ -338,7 +328,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
             Client = client
         };
         headers ??= GetDefaultHeaders();
-        foreach (KeyValuePair<string, object> header in headers)
+        foreach (var header in headers)
             request.Headers.Add(header.Key, header.Value.ToString());
 
         request.Settings.Timeout = defaultTimeout;

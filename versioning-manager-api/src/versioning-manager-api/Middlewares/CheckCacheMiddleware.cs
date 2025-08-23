@@ -10,8 +10,8 @@ public class CheckCacheMiddleware : IMiddleware
     {
         if (ctx.User.Identity?.IsAuthenticated == true)
         {
-            string? username = ctx.User.GetUserName();
-            string? sessionId = ctx.User.GetSessionId();
+            var username = ctx.User.GetUserName();
+            var sessionId = ctx.User.GetSessionId();
             if (username == null || sessionId == null || !ctx.RequestServices.GetRequiredService<IMemoryCache>()
                     .TryGetValue<TokenResponseModel>(sessionId, out _))
             {

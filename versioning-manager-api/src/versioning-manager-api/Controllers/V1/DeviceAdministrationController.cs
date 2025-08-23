@@ -66,17 +66,17 @@ public class DeviceAdministrationController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateDeviceAsync([Required] [FromBody] CreateDeviceModel model)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try create device with source {source}", username,
+        using var scope = logger.BeginScope("User {username} try create device with source {source}", username,
             model.Source);
 
         try
         {
-            Guid deviceId = Guid.CreateVersion7();
-            string apiKey = keyGen.Generate(deviceId, model.Source, model.ExpiresUtc);
-            OperationResult<DbDevice> result = await units.CreateDeviceAsync(deviceId, username, apiKey, model, hasher,
+            var deviceId = Guid.CreateVersion7();
+            var apiKey = keyGen.Generate(deviceId, model.Source, model.ExpiresUtc);
+            var result = await units.CreateDeviceAsync(deviceId, username, apiKey, model, hasher,
                 HttpContext.RequestAborted);
             if (result is { Result: OperationResult.Success, Object: not null })
             {
@@ -123,15 +123,15 @@ public class DeviceAdministrationController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateDeviceAsync([Required] [FromBody] UpdateDeviceModel model)
     {
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope =
+        using var scope =
             logger.BeginScope("User {username} try update device {id}", username, model.DeviceKey);
         try
         {
-            string newKey = keyGen.Generate(model.DeviceKey, model.Source, model.ExpiresUtc);
-            OperationResult<DbDevice> result =
+            var newKey = keyGen.Generate(model.DeviceKey, model.Source, model.ExpiresUtc);
+            var result =
                 await units.UpdateDeviceAsync(model, hasher, newKey, HttpContext.RequestAborted);
             if (result.Result == OperationResult.Success)
             {
@@ -187,24 +187,24 @@ public class DeviceAdministrationController(
             return Problem($"If {searchType} is {DeviceSearchType.One} the {nameof(id)} query param should be set!",
                 GetType().Name, StatusCodes.Status400BadRequest);
 
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope =
+        using var scope =
             logger.BeginScope("User {username} try get devices {searchType}", username, searchType);
         try
         {
             DbDevice? oneDevice = null;
             if (searchType == DeviceSearchType.One && id != null) oneDevice = await units.GetDeviceInfo(id.Value);
 
-            IEnumerable<DbDevice> devices = searchType switch
+            var devices = searchType switch
             {
                 DeviceSearchType.All => await units.GetAllDevicesAsync(HttpContext.RequestAborted),
                 DeviceSearchType.Active => await units.GetActiveDevicesAsync(HttpContext.RequestAborted),
                 DeviceSearchType.One => oneDevice != null ? [oneDevice] : [],
                 _ => []
             };
-            IEnumerable<DeviceInfoResponse> response = devices.Select(d => new DeviceInfoResponse
+            var response = devices.Select(d => new DeviceInfoResponse
             {
                 Id = d.Id,
                 ExpiresUtc = d.ExpireUTC,
@@ -239,13 +239,13 @@ public class DeviceAdministrationController(
     {
         if (id == Guid.Empty) return Problem("Device ID is required!", GetType().Name, StatusCodes.Status400BadRequest);
 
-        string? username = User.GetUserName();
+        var username = User.GetUserName();
         if (username == null) return WrongUserNameProblem();
 
-        using IDisposable? scope = logger.BeginScope("User {username} try delete device {id}", username, id);
+        using var scope = logger.BeginScope("User {username} try delete device {id}", username, id);
         try
         {
-            OperationResult<object> result = await units.DeleteDeviceAsync(id, HttpContext.RequestAborted);
+            var result = await units.DeleteDeviceAsync(id, HttpContext.RequestAborted);
             return result.Result switch
             {
                 OperationResult.Success => Ok(),

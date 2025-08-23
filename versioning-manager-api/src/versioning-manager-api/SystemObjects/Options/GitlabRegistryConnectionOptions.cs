@@ -3,7 +3,7 @@ namespace versioning_manager_api.SystemObjects.Options;
 /// <summary>
 ///     Gitlab registry connection options.
 /// </summary>
-public class GitlabRegistryConnectionOptions
+public class GitlabRegistryConnectionOptions //TODO: add disabling gitlab auth
 {
     /// <summary>
     ///     The registry address.

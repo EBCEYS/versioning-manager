@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using versioning_manager_api.IntegrationTests.Mocks;
@@ -22,7 +23,7 @@ internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IDockerController>();
             services.TryAddSingleton<IDockerController, DockerControllerMock>();
@@ -53,6 +54,7 @@ internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
         config.Properties["DockerClient:UseDefaultConnection"] = "true";
         config.Properties["DockerClient:ConnectionTimeout"] = "00:00:10";
 
+        config.Properties["GitlabRegistry:Enabled"] = "false";
         config.Properties["GitlabRegistry:Address"] = "https://my-gitlab.com";
         config.Properties["GitlabRegistry:Username"] = "gitlab";
         config.Properties["GitlabRegistry:KeyFile"] = FilesCreator.GitlabKeyFilePath;

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore;
+using versioning_manager_api.Routes;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -8,12 +9,13 @@ namespace versioning_manager_api;
 public class Program
 {
     public const string SwaggerV1Name = "v1";
-    public const string BaseUrlPath = "/version-manager";
     public const string OptionConfigKey = "JWTOptions";
     public const string ApiKeyConfigKey = "ApiKeyOptions";
     public const string DefaultUserConfigKey = "DefaultUser";
     public const string DockerClientConfigKey = "DockerClient";
     public const string GitlabRegistryConfigKey = "GitlabRegistry";
+
+    public static readonly string BaseServicePath = $"/{ControllerRoutes.BaseUrlPath}";
 
     /* Plans:
      * Post image info:

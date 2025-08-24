@@ -166,6 +166,7 @@ public class ProjectController : ControllerBase
     /// <response code="404">Not found actual project.</response>
     /// <response code="500">Internal error.</response>
     [HttpGet(GetProjectInfoRoute)]
+    [Produces("application/json")]
     [ProducesResponseType<DeviceProjectInfoResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
@@ -193,6 +194,7 @@ public class ProjectController : ControllerBase
     /// <response code="404">Project entry not found.</response>
     /// <response code="500">Internal error.</response>
     [HttpGet(GetProjectComposeFileRoute)]
+    [Produces("application/x-yaml")]
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]

@@ -10,10 +10,19 @@ using static versioning_manager_api.Routes.ControllerRoutes.ProjectV1Routes;
 
 namespace versioning_manager_api.Client.Services;
 
-internal class ProjectClientV1(string serverAddress, TimeSpan? timeout) : ClientBase(
-    new FlurlClient(serverAddress.AppendPathSegments(GetBaseRoute())),
-    timeout ?? TimeSpan.FromSeconds(120), JsonSerializerOptions.Web), IProjectClientV1
+internal class ProjectClientV1 : ClientBase, IProjectClientV1
 {
+    public ProjectClientV1(string serverAddress, TimeSpan? timeout) : base(
+        new FlurlClient(serverAddress.AppendPathSegments(GetBaseRoute())),
+        timeout ?? TimeSpan.FromSeconds(120), JsonSerializerOptions.Web)
+    {
+    }
+
+    public ProjectClientV1(HttpClient client) : base(new FlurlClient(client), client.Timeout, JsonSerializerOptions.Web)
+    {
+        BaseUrl = BaseUrl.AppendPathSegment(GetBaseRoute());
+    }
+
     public async Task<DeviceProjectInfoResponse> GetProjectInfoAsync(string projectName, string apiKey,
         CancellationToken token = default)
     {

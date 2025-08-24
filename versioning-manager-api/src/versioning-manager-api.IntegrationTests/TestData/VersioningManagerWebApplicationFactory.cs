@@ -1,9 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
+using versioning_manager_api.Attributes;
+using versioning_manager_api.Controllers.V1;
 using versioning_manager_api.IntegrationTests.Mocks;
 using versioning_manager_api.Middle.Docker;
 
@@ -12,12 +17,12 @@ namespace versioning_manager_api.IntegrationTests.TestData;
 internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
     : WebApplicationFactory<Startup>
 {
-    [NotNull] public string? BaseAddress { get; private set; }
+    [NotNull] public HttpClient? BaseClient { get; private set; }
 
 
     public Task InitializeAsync()
     {
-        BaseAddress = CreateClient().BaseAddress!.ToString();
+        BaseClient = CreateClient();
         return Task.CompletedTask;
     }
 
@@ -25,43 +30,63 @@ internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
     {
         builder.ConfigureTestServices(services =>
         {
-            services.RemoveAll<IDockerController>();
-            services.TryAddSingleton<IDockerController, DockerControllerMock>();
+            services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); }).AddApplicationPart(typeof(Startup).Assembly);
         });
+    }
 
-        builder.ConfigureAppConfiguration(ConfigureConfiguration);
-
-        //base.ConfigureWebHost(builder);
+    protected override IHostBuilder CreateHostBuilder()
+    {
+        return Host.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(ConfigureConfiguration)
+            .ConfigureWebHostDefaults(web => web.UseStartup<TestStartup>().UseEnvironment("TEST"));
     }
 
     private void ConfigureConfiguration(IConfigurationBuilder config)
     {
-        config.Properties["ConnectionStrings:0"] = dbConnectionString;
-
-        config.Properties["JWTOptions:Issuer"] = "https://issuer.com";
-        config.Properties["JWTOptions:Audience"] = "https://issuer.com";
-        config.Properties["JWTOptions:SecretFilePath"] = FilesCreator.JwtKeyFilePath;
-        config.Properties["JWTOptions:TokenTimeToLive"] = "00:30:00";
-
-        config.Properties["ApiKeyOptions:CryptKeyFilePath"] = FilesCreator.CryptKeyFilePath;
-        config.Properties["ApiKeyOptions:CryptIVFilePath"] = FilesCreator.CryptIvFilePath;
-        config.Properties["ApiKeyOptions:Prefix"] = "ebvm-";
-
-        config.Properties["DefaultUser:DefaultUsername"] = TestsContext.DefaultUsername;
-        config.Properties["DefaultUser:DefaultPassword"] = TestsContext.DefaultPassword;
-        config.Properties["DefaultUser:DefaultRoleName"] = TestsContext.DefaultRole;
-
-        config.Properties["DockerClient:UseDefaultConnection"] = "true";
-        config.Properties["DockerClient:ConnectionTimeout"] = "00:00:10";
-
-        config.Properties["GitlabRegistry:Enabled"] = "false";
-        config.Properties["GitlabRegistry:Address"] = "https://my-gitlab.com";
-        config.Properties["GitlabRegistry:Username"] = "gitlab";
-        config.Properties["GitlabRegistry:KeyFile"] = FilesCreator.GitlabKeyFilePath;
+        config.Sources.Clear();
+        config.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            {"Serilog:MinimumLevel:Default", "Verbose"},
+            {"Serilog:WriteTo:0:Name", "Console"},
+            
+            {"ConnectionStrings:postgres", dbConnectionString},
+            {"JWTOptions:Issuer", "https://issuer.com"},
+            {"JWTOptions:Audience", "https://issuer.com"},
+            {"JWTOptions:SecretFilePath", FilesCreator.JwtKeyFilePath},
+            {"JWTOptions:TokenTimeToLive", "00:30:00"},
+            
+            {"ApiKeyOptions:CryptKeyFilePath", FilesCreator.CryptKeyFilePath},
+            {"ApiKeyOptions:CryptIVFilePath", FilesCreator.CryptIvFilePath},
+            {"ApiKeyOptions:Prefix", "ebvm-"},
+            
+            {"DefaultUser:DefaultUsername", TestsContext.DefaultUsername},
+            {"DefaultUser:DefaultPassword", TestsContext.DefaultPassword},
+            {"DefaultUser:DefaultRoleName", TestsContext.DefaultRole},
+            
+            {"DockerClient:UseDefaultConnection", "true"},
+            {"DockerClient:ConnectionTimeout", "00:00:10"},
+            
+            {"GitlabRegistry:Enabled", "false"},
+            {"GitlabRegistry:Address" , "https://gitlab.com"},
+            {"GitlabRegistry:Username", "root"},
+            {"GitlabRegistry:KeyFile" , FilesCreator.GitlabKeyFilePath},
+            
+        });
     }
 
     public Task TeardownAsync()
     {
         return Task.CompletedTask;
+    }
+}
+
+internal class TestStartup(IConfiguration configuration) : Startup(configuration)
+{
+    public override void ConfigureServices(IServiceCollection services)
+    {
+        base.ConfigureServices(services);
+
+        services.RemoveAll<IDockerController>();
+        services.AddSingleton<IDockerController, DockerControllerMock>();
     }
 }

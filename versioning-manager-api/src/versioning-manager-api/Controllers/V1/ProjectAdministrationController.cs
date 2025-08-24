@@ -22,6 +22,7 @@ namespace versioning_manager_api.Controllers.V1;
 [ApiController]
 [ApiVersion(ControllerRoutes.ProjectAdministrationV1Routes.ApiVersion)]
 [Route(ControllerRoute)]
+[Produces("application/json")]
 public class ProjectAdministrationController(ILogger<ProjectAdministrationController> logger, ProjectsUnits units)
     : ControllerBase
 {

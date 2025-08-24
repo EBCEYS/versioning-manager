@@ -27,16 +27,20 @@ namespace versioning_manager_api;
 ///     The startup.
 /// </summary>
 /// <param name="configuration"></param>
-public class Startup(IConfiguration configuration) : StartupBase
+public class Startup(IConfiguration configuration)
 {
-    /// <inheritdoc />
-    public override void ConfigureServices(IServiceCollection services)
+    /// <summary>
+    ///     Configures the services.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <exception cref="Exception"></exception>
+    public virtual void ConfigureServices(IServiceCollection services)
     {
         services.AddSerilog((srv, lc) =>
             lc.ReadFrom.Configuration(configuration).ReadFrom.Services(srv));
 
         var jwtOpts = configuration.GetSection(OptionConfigKey).Get<JwtOptions>() ??
-                      throw new Exception("Not found JWT options in configuration!");
+                      throw new ApplicationException("Not found JWT options in configuration!");
         services.AddAuthentication(opts =>
         {
             opts.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -153,15 +157,23 @@ public class Startup(IConfiguration configuration) : StartupBase
             options.AssumeDefaultVersionWhenUnspecified = true;
             options.SubstituteApiVersionInUrl = true;
         });
-        base.ConfigureServices(services);
     }
 
-    /// <inheritdoc />
-    public override void Configure(IApplicationBuilder app)
+    /// <summary>
+    ///     The app configure.
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="env"></param>
+    public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseSerilogRequestLogging();
+        
+        if (env.IsDevelopment() || env.IsEnvironment("TEST"))
+        {
+            app.UseDeveloperExceptionPage();
+        }
 
-        app.UsePathBase(BaseUrlPath);
+        app.UsePathBase(BaseServicePath);
         app.UseRouting();
 
         app.UseCors(c => c.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
@@ -169,12 +181,15 @@ public class Startup(IConfiguration configuration) : StartupBase
         app.UseAuthentication();
         app.UseAuthorization();
 
-        app.UseSwagger();
-        app.UseSwaggerUI(opts =>
+        if (!env.IsEnvironment("TEST"))
         {
-            opts.SwaggerEndpoint($"{BaseUrlPath}/swagger/{SwaggerV1Name}/swagger.json", SwaggerV1Name);
-            opts.DocumentTitle = "Versioning Manager Api";
-        });
+            app.UseSwagger();
+            app.UseSwaggerUI(opts =>
+            {
+                opts.SwaggerEndpoint($"{BaseServicePath}/swagger/{SwaggerV1Name}/swagger.json", SwaggerV1Name);
+                opts.DocumentTitle = "Versioning Manager Api";
+            });
+        }
 
         app.UseCheckCacheMiddleware();
         app.UseApiCheckMiddleware();

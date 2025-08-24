@@ -1,7 +1,10 @@
-﻿namespace versioning_manager_api.Routes;
+﻿#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+namespace versioning_manager_api.Routes;
 
 public static class ControllerRoutes
 {
+    public const string BaseUrlPath = "version-manager";
+
     public static class DeviceAdministrationV1Routes
     {
         public const string ApiVersion = "1.0";
@@ -18,7 +21,7 @@ public static class ControllerRoutes
 
         public static string GetBaseRoute()
         {
-            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion);
+            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion.TrimEnd(".0".ToCharArray()));
         }
     }
 
@@ -62,7 +65,7 @@ public static class ControllerRoutes
 
         public static string GetBaseRoute()
         {
-            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion);
+            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion.TrimEnd(".0".ToCharArray()));
         }
 
         public static string GetProjectEntriesRouteWith(string name)
@@ -116,7 +119,7 @@ public static class ControllerRoutes
 
         public static string GetBaseRoute()
         {
-            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion);
+            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion.TrimEnd(".0".ToCharArray()));
         }
 
         public static string GetProjectInfoRouteWith(string name)
@@ -155,7 +158,7 @@ public static class ControllerRoutes
 
         public static string GetBaseRoute()
         {
-            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion);
+            return ControllerRoute.Replace("{version:apiVersion}", ApiVersion.TrimEnd(".0".ToCharArray()));
         }
     }
 }

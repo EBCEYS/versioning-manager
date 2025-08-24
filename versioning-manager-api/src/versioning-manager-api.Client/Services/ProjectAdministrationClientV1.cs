@@ -10,11 +10,20 @@ using static versioning_manager_api.Routes.ControllerRoutes.ProjectAdministratio
 
 namespace versioning_manager_api.Client.Services;
 
-internal class ProjectAdministrationClientV1(string serverAddress, TimeSpan? timeout)
-    : ClientBase(
-        new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
-        timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web), IProjectAdministrationClientV1
+internal class ProjectAdministrationClientV1 : ClientBase, IProjectAdministrationClientV1
 {
+    public ProjectAdministrationClientV1(string serverAddress, TimeSpan? timeout) : base(
+        new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
+        timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web)
+    {
+    }
+
+    public ProjectAdministrationClientV1(HttpClient client) : base(new FlurlClient(client), client.Timeout,
+        JsonSerializerOptions.Web)
+    {
+        BaseUrl = BaseUrl.AppendPathSegment(GetBaseRoute());
+    }
+
     public async Task CreateProjectAsync(CreateProjectModel request, string jwt, CancellationToken token = default)
     {
         await PostJsonAsync<CreateProjectModel, ProblemDetails>(

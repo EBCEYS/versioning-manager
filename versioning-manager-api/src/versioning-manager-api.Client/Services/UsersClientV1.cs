@@ -10,10 +10,19 @@ using static versioning_manager_api.Routes.ControllerRoutes.UsersV1Routes;
 
 namespace versioning_manager_api.Client.Services;
 
-internal class UsersClientV1(string serverAddress, TimeSpan? timeout) : ClientBase(
-    new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
-    timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web), IUsersClientV1
+internal class UsersClientV1 : ClientBase, IUsersClientV1
 {
+    public UsersClientV1(string serverAddress, TimeSpan? timeout) : base(
+        new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
+        timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web)
+    {
+    }
+
+    public UsersClientV1(HttpClient client) : base(new FlurlClient(client), client.Timeout, JsonSerializerOptions.Web)
+    {
+        BaseUrl = BaseUrl.AppendPathSegment(GetBaseRoute());
+    }
+
     public async Task CreateUserAsync(UserCreationApiModel request, string jwt, CancellationToken token = default)
     {
         await PostJsonAsync<UserCreationApiModel, ProblemDetails>(

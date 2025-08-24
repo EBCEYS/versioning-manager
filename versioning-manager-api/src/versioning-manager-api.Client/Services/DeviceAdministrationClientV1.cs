@@ -10,10 +10,20 @@ using static versioning_manager_api.Routes.ControllerRoutes.DeviceAdministration
 
 namespace versioning_manager_api.Client.Services;
 
-internal class DeviceAdministrationClientV1(string serverAddress, TimeSpan? timeout) : ClientBase(
-    new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
-    timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web), IDeviceAdministrationClientV1
+internal class DeviceAdministrationClientV1 : ClientBase, IDeviceAdministrationClientV1
 {
+    public DeviceAdministrationClientV1(string serverAddress, TimeSpan? timeout) : base(
+        new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
+        timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web)
+    {
+    }
+
+    public DeviceAdministrationClientV1(HttpClient client) : base(new FlurlClient(client), client.Timeout,
+        JsonSerializerOptions.Web)
+    {
+        BaseUrl = BaseUrl.AppendPathSegment(GetBaseRoute());
+    }
+
     public async Task<DeviceTokenInfoResponse> CreateDeviceAsync(CreateDeviceModel request, string jwt,
         CancellationToken token = default)
     {

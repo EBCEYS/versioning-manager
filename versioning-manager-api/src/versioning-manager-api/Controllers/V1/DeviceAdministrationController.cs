@@ -27,6 +27,7 @@ namespace versioning_manager_api.Controllers.V1;
 [ApiController]
 [ApiVersion(ControllerRoutes.DeviceAdministrationV1Routes.ApiVersion)]
 [Route(ControllerRoute)]
+[Produces("application/json")]
 public class DeviceAdministrationController(
     ILogger<DeviceAdministrationController> logger,
     DeviceUnits units,

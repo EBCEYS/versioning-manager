@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Testcontainers.PostgreSql;
 using versioning_manager_api.Client;
 using versioning_manager_api.DbContext.DevDatabase;
@@ -34,16 +35,16 @@ public static class TestsContext
         _postgres = new PostgreSqlBuilder().WithDatabase(DatabaseName)
             .WithUsername(DbUser).WithPassword(DbPassword).WithImage("postgres:16.3").WithCleanUp(true).Build();
         await _postgres.StartAsync();
+        await WaitForDatabase(_postgres.GetConnectionString());
 
         _appFactory =
             new VersioningManagerWebApplicationFactory(_postgres.GetConnectionString());
         await _appFactory.InitializeAsync();
-        BaseAddress = _appFactory.BaseAddress;
 
         var scope = _appFactory.Services.CreateScope();
         DbContext = scope.ServiceProvider.GetRequiredService<VmDatabaseContext>();
 
-        ServiceClient = new VersioningManagerApiClientV1(BaseAddress);
+        ServiceClient = new VersioningManagerApiClientV1(_appFactory.BaseClient);
     }
 
     [OneTimeTearDown]
@@ -54,5 +55,25 @@ public static class TestsContext
         await _appFactory.DisposeAsync();
         await DbContext.DisposeAsync();
         await _postgres.DisposeAsync();
+    }
+
+    private static async Task WaitForDatabase(string connectionString)
+    {
+        var maxAttempts = 10;
+        var delay = 1000;
+
+        for (var i = 0; i < maxAttempts; i++)
+            try
+            {
+                await using var connection = new NpgsqlConnection(connectionString);
+                await connection.OpenAsync();
+                return;
+            }
+            catch
+            {
+                await Task.Delay(delay);
+            }
+
+        throw new Exception("Database not ready after waiting");
     }
 }

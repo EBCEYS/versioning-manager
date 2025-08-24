@@ -6,9 +6,10 @@ namespace versioning_manager_api.SystemObjects.Options;
 public class GitlabRegistryConnectionOptions
 {
     /// <summary>
-    /// The enabled.
+    ///     The enabled.
     /// </summary>
     public required bool Enabled { get; init; } = true;
+
     /// <summary>
     ///     The registry address.
     /// </summary>

@@ -2,6 +2,7 @@ using System.Text.Json;
 using Flurl;
 using Flurl.Http;
 using versioning_manager_api.Client.Exceptions;
+using versioning_manager_api.Routes;
 
 namespace versioning_manager_api.Client;
 
@@ -12,7 +13,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     private const string UnsuccessStatusCodeExceptionMessage = "Unsuccess status code!";
     private const string IncorrectParsingExceptionMessage = "Incorrect response parsing!";
 
-    private readonly Url baseUrl = client.BaseUrl;
+    protected Url BaseUrl = client.BaseUrl.AppendPathSegment(ControllerRoutes.BaseUrlPath);
 
     protected ClientBase() : this(new FlurlClient(), TimeSpan.FromSeconds(10), JsonSerializerOptions.Web)
     {
@@ -36,7 +37,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         Dictionary<string, object>? headers = null,
         CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response = await request.AllowAnyHttpStatus().GetAsync(cancellationToken: token);
@@ -60,7 +61,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task<Stream> GetStreamAsync<TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -71,10 +72,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
 
         if (TryDeserialize(await response.ResponseMessage.Content.ReadAsByteArrayAsync(token),
                 out TError? error) && error != null)
-            throw new VersioningManagerApiException<TError>(response.StatusCode, error,
+            throw new VersioningManagerApiException<TError>(response, error,
                 UnsuccessStatusCodeExceptionMessage);
 
-        throw new VersioningManagerApiException<string>(response.StatusCode, await response.GetStringAsync(),
+        throw new VersioningManagerApiException<string>(response, await response.GetStringAsync(),
             IncorrectParsingExceptionMessage);
     }
 
@@ -98,7 +99,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest? requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -125,7 +126,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest? requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -154,7 +155,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -181,7 +182,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         TRequest requestObject,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -205,7 +206,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task PutAsync<TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -237,7 +238,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task<TResponse> DeleteJsonAsync<TResponse, TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -261,7 +262,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task DeleteAsync<TError>(Action<Url> urlAction,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response =
@@ -273,7 +274,7 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     protected async Task PostStreamAsync<TError>(Action<Url> urlAction, Stream stream,
         Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
     {
-        var url = FormatUri(urlAction, baseUrl);
+        var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
         var response = await request.AllowAnyHttpStatus()
@@ -285,39 +286,39 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
     private async Task<TResponse> ProcessResponse<TResponse, TError>(IFlurlResponse response, CancellationToken token)
         where TError : class
     {
-        if (response == null) throw new VersioningManagerApiException<string>(-1, "response is null!");
+        if (response == null) throw new VersioningManagerApiException<string>(null, "response is null!");
 
         if (!response.ResponseMessage.IsSuccessStatusCode)
         {
             if (TryDeserialize(await response.ResponseMessage.Content.ReadAsByteArrayAsync(token), out TError? error) &&
                 error != null)
-                throw new VersioningManagerApiException<TError>(response.StatusCode, error,
+                throw new VersioningManagerApiException<TError>(response, error,
                     UnsuccessStatusCodeExceptionMessage);
 
-            throw new VersioningManagerApiException<TError>(response.StatusCode, UnsuccessStatusCodeExceptionMessage);
+            throw new VersioningManagerApiException<TError>(response, UnsuccessStatusCodeExceptionMessage);
         }
 
         if (TryDeserialize(await response.ResponseMessage.Content.ReadAsByteArrayAsync(token),
                 out TResponse? responseContent) && responseContent != null)
             return responseContent;
 
-        throw new VersioningManagerApiException<string>(response.StatusCode,
+        throw new VersioningManagerApiException<string>(response,
             await response.GetStringAsync(), IncorrectParsingExceptionMessage);
     }
 
     private async Task ProcessResponse<TError>(IFlurlResponse response, CancellationToken token)
         where TError : class
     {
-        if (response == null) throw new VersioningManagerApiException<string>(-1, "response is null!");
+        if (response == null) throw new VersioningManagerApiException<string>(null, "response is null!");
 
         if (!response.ResponseMessage.IsSuccessStatusCode)
         {
             if (TryDeserialize(await response.ResponseMessage.Content.ReadAsByteArrayAsync(token), out TError? error) &&
                 error != null)
-                throw new VersioningManagerApiException<TError>(response.StatusCode, error,
+                throw new VersioningManagerApiException<TError>(response, error,
                     UnsuccessStatusCodeExceptionMessage);
 
-            throw new VersioningManagerApiException<TError>(response.StatusCode, UnsuccessStatusCodeExceptionMessage);
+            throw new VersioningManagerApiException<TError>(response, UnsuccessStatusCodeExceptionMessage);
         }
     }
 

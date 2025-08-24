@@ -33,20 +33,16 @@ public class DockerController : IDockerController
             : new DockerClientConfiguration(new Uri(opts.Value.DockerHost!), credentials, opts.Value.ConnectionTimeout);
 
         _client = config.CreateClient();
-        
+
         if (gitOpts.Value.Enabled)
-        {
             _gitAuth = new AuthConfig
             {
                 ServerAddress = gitOpts.Value.Address,
                 Username = gitOpts.Value.Username,
                 Password = File.ReadAllText(gitOpts.Value.KeyFile).Trim()
             };
-        }
         else
-        {
             _gitAuth = new AuthConfig();
-        }
     }
 
     /// <inheritdoc />

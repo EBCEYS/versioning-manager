@@ -4,6 +4,8 @@ using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Models.Requests.Devices;
 using versioning_manager_api.SystemObjects;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace versioning_manager_api.Middle.UnitOfWorks.Devices;
 
 public class DeviceUnits(VmDatabaseContext db)

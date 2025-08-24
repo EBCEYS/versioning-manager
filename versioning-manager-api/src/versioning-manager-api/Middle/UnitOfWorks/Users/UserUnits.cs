@@ -4,6 +4,8 @@ using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.Models.Requests.Users;
 using versioning_manager_api.SystemObjects;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 // ReSharper disable SuggestVarOrType_SimpleTypes
 
 namespace versioning_manager_api.Middle.UnitOfWorks.Users;

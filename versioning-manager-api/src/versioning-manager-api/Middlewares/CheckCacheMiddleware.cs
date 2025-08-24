@@ -2,6 +2,8 @@ using Microsoft.Extensions.Caching.Memory;
 using versioning_manager_api.Extensions;
 using versioning_manager_api.Models;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace versioning_manager_api.Middlewares;
 
 public class CheckCacheMiddleware : IMiddleware

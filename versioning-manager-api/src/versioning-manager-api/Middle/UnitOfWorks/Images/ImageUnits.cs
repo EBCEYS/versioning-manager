@@ -12,6 +12,8 @@ namespace versioning_manager_api.Middle.UnitOfWorks.Images;
 ///     The image units.
 /// </summary>
 /// <param name="db">The database context.</param>
+/// <param name="docker"></param>
+/// <param name="composeHelper"></param>
 public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerComposeHelper composeHelper)
 {
     /// <summary>

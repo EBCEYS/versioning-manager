@@ -8,6 +8,8 @@ using versioning_manager_api.Routes.StaticStorages;
 using versioning_manager_api.SystemObjects;
 using versioning_manager_api.SystemObjects.Options;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace versioning_manager_api.Middle;
 
 public class AppStartingService(

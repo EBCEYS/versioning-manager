@@ -567,9 +567,7 @@ public class UsersController(
     /// </summary>
     /// <param name="searchType">The search user type.</param>
     /// <param name="username">
-    ///     The username. Should be set if
-    ///     <param name="searchType"></param>
-    ///     is <see cref="UsersSearchType.One" />.
+    ///     The username. Should be set if is <see cref="UsersSearchType.One" />.
     /// </param>
     /// <response code="200">Users list if exists. May be empty.</response>
     /// <response code="400">Invalid params.</response>

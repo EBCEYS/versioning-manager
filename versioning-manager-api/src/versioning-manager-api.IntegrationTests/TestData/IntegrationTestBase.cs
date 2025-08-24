@@ -6,10 +6,9 @@ namespace versioning_manager_api.IntegrationTests.TestData;
 
 public abstract class IntegrationTestBase
 {
-    [NotNull]
-    protected static VmDatabaseContext? DbContext { get; private set; }
-    [NotNull]
-    protected static VersioningManagerApiClientV1? Client { get; private set; }
+    [NotNull] protected static VmDatabaseContext? DbContext { get; private set; }
+
+    [NotNull] protected static VersioningManagerApiClientV1? Client { get; private set; }
 
     protected static async Task ResetAsync()
     {

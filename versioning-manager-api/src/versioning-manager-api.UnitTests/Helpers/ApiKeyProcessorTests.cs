@@ -15,9 +15,9 @@ public class ApiKeyProcessorTests
     private const string CryptIvFilePath = "IVFile";
     private const string Prefix = "abc_";
 
-    private ApiKeyProcessor apiKeyProcessor;
-    private VmDatabaseDbContextMockHelper dbContextHelper;
-    private HashHelper hashHelper;
+    private ApiKeyProcessor _apiKeyProcessor;
+    private VmDatabaseDbContextMockHelper _dbContextHelper;
+    private HashHelper _hashHelper;
 
     [OneTimeSetUp]
     public async Task OneTimeSetup()
@@ -53,19 +53,19 @@ public class ApiKeyProcessorTests
             Prefix = Prefix
         });
         ICryptHelper cryptHelper = new CryptHelper(options);
-        apiKeyProcessor = new ApiKeyProcessor(cryptHelper);
+        _apiKeyProcessor = new ApiKeyProcessor(cryptHelper);
 
-        hashHelper = new HashHelper();
+        _hashHelper = new HashHelper();
 
-        dbContextHelper = new VmDatabaseDbContextMockHelper();
+        _dbContextHelper = new VmDatabaseDbContextMockHelper();
     }
 
     [TestCaseSource(nameof(GetDataForTests))]
     public void When_SomeEntityKeyed_With_SpecifiedParams_Result_Success(Guid id, string source, DateTimeOffset expires)
     {
-        var apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = _apiKeyProcessor.Generate(id, source, expires);
 
-        var entity = apiKeyProcessor.Decrypt(apiKey);
+        var entity = _apiKeyProcessor.Decrypt(apiKey);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         entity.Should().NotBeNull();
@@ -87,14 +87,14 @@ public class ApiKeyProcessorTests
     public async Task When_ValidateSomeEntity_With_SpecifiedParams_Result_Valid(Guid id, string source,
         DateTimeOffset expires)
     {
-        var apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = _apiKeyProcessor.Generate(id, source, expires);
 
-        var salt = hashHelper.GenerateSalt();
+        var salt = _hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, source, expires, salt, apiKey);
 
         var result =
-            await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.Valid);
@@ -112,14 +112,14 @@ public class ApiKeyProcessorTests
     public async Task When_ValidateSomeEntity_With_SpecifiedParams_Result_InValid(Guid id, string source,
         DateTimeOffset expires)
     {
-        var apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = _apiKeyProcessor.Generate(id, source, expires);
 
-        var salt = hashHelper.GenerateSalt();
+        var salt = _hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, source, expires, salt, apiKey);
 
         var result =
-            await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.Expired);
@@ -142,14 +142,14 @@ public class ApiKeyProcessorTests
         var id = Guid.NewGuid();
         var source = "someSource";
         var expires = DateTimeOffset.Now;
-        var apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = _apiKeyProcessor.Generate(id, source, expires);
 
-        var salt = hashHelper.GenerateSalt();
+        var salt = _hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, "AnotherSalt", expires, salt, apiKey);
 
         var result =
-            await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.IncorrectSource);
@@ -162,14 +162,14 @@ public class ApiKeyProcessorTests
         var id = Guid.NewGuid();
         var source = "someSource";
         var expires = DateTimeOffset.Now;
-        var apiKey = apiKeyProcessor.Generate(id, source, expires) + "some string";
+        var apiKey = _apiKeyProcessor.Generate(id, source, expires) + "some string";
 
-        var salt = hashHelper.GenerateSalt();
+        var salt = _hashHelper.GenerateSalt();
 
         AddDeviceWithUser(id, source, expires, salt, apiKey);
 
         var result =
-            await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.IncorrectKey);
@@ -182,10 +182,10 @@ public class ApiKeyProcessorTests
         var id = Guid.NewGuid();
         var source = "someSource";
         var expires = DateTimeOffset.Now;
-        var apiKey = apiKeyProcessor.Generate(id, source, expires);
+        var apiKey = _apiKeyProcessor.Generate(id, source, expires);
 
         var result =
-            await apiKeyProcessor.ValidateAsync(apiKey, dbContextHelper.Initialize(), hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.DeviceNotFound);
@@ -194,14 +194,14 @@ public class ApiKeyProcessorTests
 
     private void AddDeviceWithUser(Guid id, string source, DateTimeOffset expires, string salt, string apiKey)
     {
-        dbContextHelper.Devices.Add(new DbDevice
+        _dbContextHelper.Devices.Add(new DbDevice
         {
             CreationUTC = DateTimeOffset.UtcNow,
             Creator = new DbUser
             {
                 IsActive = true,
                 Salt = salt,
-                Password = hashHelper.Hash("password", salt),
+                Password = _hashHelper.Hash("password", salt),
                 Username = "Vitaliy",
                 CreationUtc = DateTimeOffset.UtcNow
             },
@@ -209,9 +209,9 @@ public class ApiKeyProcessorTests
             ExpireUTC = expires,
             Id = id,
             IsActive = true,
-            KeyHash = hashHelper.Hash(apiKey, salt),
+            KeyHash = _hashHelper.Hash(apiKey, salt),
             Salt = salt,
-            SourceHash = hashHelper.Hash(source, hashHelper.DefaultSalt)
+            SourceHash = _hashHelper.Hash(source, _hashHelper.DefaultSalt)
         });
     }
 }

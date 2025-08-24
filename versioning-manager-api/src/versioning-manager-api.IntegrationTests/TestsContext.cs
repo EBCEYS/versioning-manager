@@ -1,7 +1,6 @@
 using System.Diagnostics;
 using Testcontainers.PostgreSql;
 using versioning_manager_api.Client;
-using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.IntegrationTests.Mocks;
 using versioning_manager_api.IntegrationTests.TestData;
 
@@ -36,7 +35,7 @@ public class TestsContext
 
         _appFactory =
             new VersioningManagerWebApplicationFactory(_postgres.GetConnectionString());
-        
+
         await SetUpApplicationAsync();
     }
 
@@ -56,7 +55,7 @@ public class TestsContext
         await _appFactory.DisposeAsync();
 
         await _postgres.DisposeAsync();
-        
+
         Trace.Flush();
     }
 }

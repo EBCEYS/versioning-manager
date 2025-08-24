@@ -23,6 +23,7 @@ public class UsersControllerV1Tests : IntegrationTestBase
     {
         return _client.LoginAsync(GetValidLoginRequest());
     }
+
     private static UserLoginModel GetValidLoginRequest()
     {
         return new UserLoginModel

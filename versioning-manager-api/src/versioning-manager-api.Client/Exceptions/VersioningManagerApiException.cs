@@ -1,4 +1,5 @@
 using Flurl.Http;
+using versioning_manager_api.Client.Extensions;
 
 namespace versioning_manager_api.Client.Exceptions;
 
@@ -16,7 +17,7 @@ public class VersioningManagerApiException<TError> : Exception where TError : cl
     /// <param name="innerException"></param>
     public VersioningManagerApiException(IFlurlResponse? response, string message, Exception? innerException = null) :
         base(
-            message,
+            $"Status code: {response?.StatusCode}, message: {message}",
             innerException)
     {
         StatusCode = response?.StatusCode;
@@ -29,7 +30,8 @@ public class VersioningManagerApiException<TError> : Exception where TError : cl
     /// <param name="response"></param>
     /// <param name="errorInfo"></param>
     /// <param name="message"></param>
-    public VersioningManagerApiException(IFlurlResponse? response, TError errorInfo, string message) : base(message)
+    public VersioningManagerApiException(IFlurlResponse? response, TError errorInfo, string message) : base(
+        $"Status code: {response?.StatusCode} {message} details: {errorInfo.ToJson()}")
     {
         StatusCode = response?.StatusCode;
         ErrorInfo = errorInfo;

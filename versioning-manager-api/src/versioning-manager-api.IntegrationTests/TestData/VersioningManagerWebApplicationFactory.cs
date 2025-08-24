@@ -1,20 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
-using versioning_manager_api.Attributes;
-using versioning_manager_api.Controllers.V1;
 using versioning_manager_api.IntegrationTests.Mocks;
 using versioning_manager_api.Middle.Docker;
 
 namespace versioning_manager_api.IntegrationTests.TestData;
 
-internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
+public class VersioningManagerWebApplicationFactory(string dbConnectionString)
     : WebApplicationFactory<Startup>
 {
     [NotNull] public HttpClient? BaseClient { get; private set; }
@@ -28,17 +22,21 @@ internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureTestServices(services =>
-        {
-            services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); }).AddApplicationPart(typeof(Startup).Assembly);
-        });
+        //builder.ConfigureTestServices(services =>
+        //{
+        //    services.AddControllers().AddApplicationPart(typeof(UsersController).Assembly);
+        //    //services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
+        //    //services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); })
+        //    //    .AddApplicationPart(typeof(Startup).Assembly).AddJsonOptions(ConfigureJsonOptions);
+        //});
     }
 
     protected override IHostBuilder CreateHostBuilder()
     {
         return Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(ConfigureConfiguration)
-            .ConfigureWebHostDefaults(web => web.UseStartup<TestStartup>().UseEnvironment("TEST"));
+            .ConfigureWebHostDefaults(web =>
+                web.UseStartup<TestStartup>().UseEnvironment("Development"));
     }
 
     private void ConfigureConfiguration(IConfigurationBuilder config)
@@ -46,31 +44,30 @@ internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
         config.Sources.Clear();
         config.AddInMemoryCollection(new Dictionary<string, string?>
         {
-            {"Serilog:MinimumLevel:Default", "Verbose"},
-            {"Serilog:WriteTo:0:Name", "Console"},
-            
-            {"ConnectionStrings:postgres", dbConnectionString},
-            {"JWTOptions:Issuer", "https://issuer.com"},
-            {"JWTOptions:Audience", "https://issuer.com"},
-            {"JWTOptions:SecretFilePath", FilesCreator.JwtKeyFilePath},
-            {"JWTOptions:TokenTimeToLive", "00:30:00"},
-            
-            {"ApiKeyOptions:CryptKeyFilePath", FilesCreator.CryptKeyFilePath},
-            {"ApiKeyOptions:CryptIVFilePath", FilesCreator.CryptIvFilePath},
-            {"ApiKeyOptions:Prefix", "ebvm-"},
-            
-            {"DefaultUser:DefaultUsername", TestsContext.DefaultUsername},
-            {"DefaultUser:DefaultPassword", TestsContext.DefaultPassword},
-            {"DefaultUser:DefaultRoleName", TestsContext.DefaultRole},
-            
-            {"DockerClient:UseDefaultConnection", "true"},
-            {"DockerClient:ConnectionTimeout", "00:00:10"},
-            
-            {"GitlabRegistry:Enabled", "false"},
-            {"GitlabRegistry:Address" , "https://gitlab.com"},
-            {"GitlabRegistry:Username", "root"},
-            {"GitlabRegistry:KeyFile" , FilesCreator.GitlabKeyFilePath},
-            
+            { "Serilog:MinimumLevel:Default", "Verbose" },
+            { "Serilog:WriteTo:0:Name", "Console" },
+
+            { "ConnectionStrings:postgres", dbConnectionString },
+            { "JWTOptions:Issuer", "https://issuer.com" },
+            { "JWTOptions:Audience", "https://issuer.com" },
+            { "JWTOptions:SecretFilePath", FilesCreator.JwtKeyFilePath },
+            { "JWTOptions:TokenTimeToLive", "00:30:00" },
+
+            { "ApiKeyOptions:CryptKeyFilePath", FilesCreator.CryptKeyFilePath },
+            { "ApiKeyOptions:CryptIVFilePath", FilesCreator.CryptIvFilePath },
+            { "ApiKeyOptions:Prefix", "ebvm-" },
+
+            { "DefaultUser:DefaultUsername", TestsContext.DefaultUsername },
+            { "DefaultUser:DefaultPassword", TestsContext.DefaultPassword },
+            { "DefaultUser:DefaultRoleName", TestsContext.DefaultRole },
+
+            { "DockerClient:UseDefaultConnection", "true" },
+            { "DockerClient:ConnectionTimeout", "00:00:10" },
+
+            { "GitlabRegistry:Enabled", "false" },
+            { "GitlabRegistry:Address", "https://gitlab.com" },
+            { "GitlabRegistry:Username", "root" },
+            { "GitlabRegistry:KeyFile", FilesCreator.GitlabKeyFilePath }
         });
     }
 
@@ -78,9 +75,43 @@ internal class VersioningManagerWebApplicationFactory(string dbConnectionString)
     {
         return Task.CompletedTask;
     }
+
+    private static void ConfigureJsonOptions(JsonOptions opts)
+    {
+        var webOpts = JsonSerializerOptions.Web;
+        opts.AllowInputFormatterExceptionMessages = true;
+        opts.JsonSerializerOptions.AllowOutOfOrderMetadataProperties = webOpts.AllowOutOfOrderMetadataProperties;
+        opts.JsonSerializerOptions.AllowTrailingCommas = webOpts.AllowTrailingCommas;
+        foreach (var webOptsConverter in webOpts.Converters)
+            opts.JsonSerializerOptions.Converters.Add(webOptsConverter);
+
+        opts.JsonSerializerOptions.DefaultBufferSize = webOpts.DefaultBufferSize;
+        opts.JsonSerializerOptions.DefaultIgnoreCondition = webOpts.DefaultIgnoreCondition;
+        opts.JsonSerializerOptions.DictionaryKeyPolicy = webOpts.DictionaryKeyPolicy;
+        opts.JsonSerializerOptions.Encoder = webOpts.Encoder;
+        opts.JsonSerializerOptions.IgnoreReadOnlyFields = webOpts.IgnoreReadOnlyFields;
+        opts.JsonSerializerOptions.IgnoreReadOnlyProperties = webOpts.IgnoreReadOnlyProperties;
+        opts.JsonSerializerOptions.IncludeFields = webOpts.IncludeFields;
+        opts.JsonSerializerOptions.IndentCharacter = webOpts.IndentCharacter;
+        opts.JsonSerializerOptions.IndentSize = webOpts.IndentSize;
+        opts.JsonSerializerOptions.MaxDepth = webOpts.MaxDepth;
+        opts.JsonSerializerOptions.NewLine = webOpts.NewLine;
+        opts.JsonSerializerOptions.NumberHandling = webOpts.NumberHandling;
+        opts.JsonSerializerOptions.PreferredObjectCreationHandling = webOpts.PreferredObjectCreationHandling;
+        opts.JsonSerializerOptions.PropertyNameCaseInsensitive = webOpts.PropertyNameCaseInsensitive;
+        opts.JsonSerializerOptions.PropertyNamingPolicy = webOpts.PropertyNamingPolicy;
+        opts.JsonSerializerOptions.ReadCommentHandling = webOpts.ReadCommentHandling;
+        opts.JsonSerializerOptions.ReferenceHandler = webOpts.ReferenceHandler;
+        opts.JsonSerializerOptions.RespectNullableAnnotations = webOpts.RespectNullableAnnotations;
+        opts.JsonSerializerOptions.RespectRequiredConstructorParameters = webOpts.RespectRequiredConstructorParameters;
+        opts.JsonSerializerOptions.TypeInfoResolver = webOpts.TypeInfoResolver;
+        opts.JsonSerializerOptions.UnknownTypeHandling = webOpts.UnknownTypeHandling;
+        opts.JsonSerializerOptions.UnmappedMemberHandling = webOpts.UnmappedMemberHandling;
+        opts.JsonSerializerOptions.WriteIndented = webOpts.WriteIndented;
+    }
 }
 
-internal class TestStartup(IConfiguration configuration) : Startup(configuration)
+public class TestStartup(IConfiguration configuration) : Startup(configuration)
 {
     public override void ConfigureServices(IServiceCollection services)
     {
@@ -88,5 +119,7 @@ internal class TestStartup(IConfiguration configuration) : Startup(configuration
 
         services.RemoveAll<IDockerController>();
         services.AddSingleton<IDockerController, DockerControllerMock>();
+
+        services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
     }
 }

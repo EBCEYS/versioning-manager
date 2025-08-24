@@ -4,7 +4,7 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>versioning_manager_api</RootNamespace>
-        <Version>1.0.1.4</Version>
+        <Version>1.0.2.0</Version>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <ItemGroup>
@@ -37,5 +37,8 @@
         <ProjectReference Include="..\versioning-manager-api.DbContext\versioning-manager-api.DbContext.csproj"/>
         <ProjectReference Include="..\versioning-manager-api.Routes\versioning-manager-api.Routes.csproj"/>
         <ProjectReference Include="..\versioning-manager-api.Models\versioning-manager-api.Models.csproj"/>
+    </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="versioning_manager_api.IntegrationTests"/>
     </ItemGroup>
 </Project>

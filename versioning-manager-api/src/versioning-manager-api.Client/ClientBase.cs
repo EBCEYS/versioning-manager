@@ -295,7 +295,8 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
                 throw new VersioningManagerApiException<TError>(response, error,
                     UnsuccessStatusCodeExceptionMessage);
 
-            throw new VersioningManagerApiException<TError>(response, UnsuccessStatusCodeExceptionMessage);
+            throw new VersioningManagerApiException<TError>(response,
+                await response.ResponseMessage.Content.ReadAsStringAsync(token));
         }
 
         if (TryDeserialize(await response.ResponseMessage.Content.ReadAsByteArrayAsync(token),
@@ -318,7 +319,8 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
                 throw new VersioningManagerApiException<TError>(response, error,
                     UnsuccessStatusCodeExceptionMessage);
 
-            throw new VersioningManagerApiException<TError>(response, UnsuccessStatusCodeExceptionMessage);
+            throw new VersioningManagerApiException<TError>(response,
+                await response.ResponseMessage.Content.ReadAsStringAsync(token));
         }
     }
 

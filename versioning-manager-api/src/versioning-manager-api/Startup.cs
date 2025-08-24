@@ -167,11 +167,8 @@ public class Startup(IConfiguration configuration)
     public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseSerilogRequestLogging();
-        
-        if (env.IsDevelopment() || env.IsEnvironment("TEST"))
-        {
-            app.UseDeveloperExceptionPage();
-        }
+
+        if (env.IsDevelopment() || env.IsEnvironment("TEST")) app.UseDeveloperExceptionPage();
 
         app.UsePathBase(BaseServicePath);
         app.UseRouting();

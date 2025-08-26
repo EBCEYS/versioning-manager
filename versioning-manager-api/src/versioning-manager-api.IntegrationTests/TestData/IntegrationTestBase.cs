@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.EntityFrameworkCore;
 using versioning_manager_api.Client;
 using versioning_manager_api.DbContext.DevDatabase;
 

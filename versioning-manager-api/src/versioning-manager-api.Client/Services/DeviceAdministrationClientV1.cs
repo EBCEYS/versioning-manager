@@ -59,7 +59,7 @@ internal class DeviceAdministrationClientV1 : ClientBase, IDeviceAdministrationC
 
     public async Task DeleteDeviceAsync(Guid id, string jwt, CancellationToken token = default)
     {
-        await DeleteJsonAsync<object, ProblemDetails>(
+        await DeleteAsync<ProblemDetails>(
             url => url.AppendPathSegment(DeleteDeviceRoute)
                 .AppendQueryParam("id", id), GetJwtHeaders(jwt), token);
     }

@@ -88,9 +88,9 @@ public class UsersControllerV1Tests : IntegrationTestBase
         var loginResponse = await _client.LoginAsync(new UserLoginModel
         {
             Username = username,
-            Password = password,
+            Password = password
         });
-        
+
         loginResponse.Token.Should().NotBeNullOrEmpty();
     }
 
@@ -121,9 +121,10 @@ public class UsersControllerV1Tests : IntegrationTestBase
             ex.ErrorInfo.Should().NotBeNull();
             return;
         }
+
         Assert.Fail("No exception thrown!");
     }
-    
+
     [Test]
     public async Task When_CreateRole_Result_Success()
     {
@@ -140,7 +141,7 @@ public class UsersControllerV1Tests : IntegrationTestBase
         var newRoleEntity = roles.Roles.First(r => r.Name == newRole);
 
         systemRoles.Should().NotBeEmpty();
-        
+
         newRoleEntity.Name.Should().Be(newRole);
         newRoleEntity.Roles.Should().BeEquivalentTo(systemRoles);
     }
@@ -159,21 +160,21 @@ public class UsersControllerV1Tests : IntegrationTestBase
 
         var newRoles = systemRoles.SkipLast(1).ToArray();
         await _client.UpdateRoleAsync(newRole, newRoles, _validToken);
-        
+
         var roles = await _client.GetUsersRolesAsync(_validToken);
         var newRoleEntity = roles.Roles.First(r => r.Name == newRole);
 
         systemRoles.Should().NotBeEmpty();
-        
+
         newRoleEntity.Name.Should().Be(newRole);
         newRoleEntity.Roles.Should().BeEquivalentTo(newRoles);
     }
-    
+
     [Test]
     public async Task When_RemoveRole_Result_Success()
     {
         const string newRole = "some_role";
-        
+
         var systemRoles = await _client.GetSystemRolesAsync(_validToken);
 
         await _client.CreateRoleAsync(new CreateRoleModel
@@ -183,10 +184,10 @@ public class UsersControllerV1Tests : IntegrationTestBase
         }, _validToken);
 
         await _client.DeleteRoleAsync(newRole, _validToken);
-        
+
         var roles = await _client.GetUsersRolesAsync(_validToken);
         var newRoleEntity = roles.Roles.FirstOrDefault(r => r.Name == newRole);
-        
+
         newRoleEntity.Should().BeNull();
     }
 
@@ -202,9 +203,9 @@ public class UsersControllerV1Tests : IntegrationTestBase
             Password = password,
             Role = TestsContext.DefaultRole
         }, _validToken);
-        
+
         await _client.DeleteUserAsync(username, _validToken);
-        
+
         var newUser = await _client.GetUserInfoAsync(username, _validToken);
 
         newUser.Should().NotBeNull();
@@ -225,7 +226,7 @@ public class UsersControllerV1Tests : IntegrationTestBase
         }, _validToken);
 
         var users = await _client.GetAllUsersAsync(_validToken);
-        
+
         users.Should().NotBeEmpty();
         users.Count.Should().Be(2);
     }

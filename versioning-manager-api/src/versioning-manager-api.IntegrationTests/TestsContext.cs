@@ -32,7 +32,7 @@ public class TestsContext
         _postgres = new PostgreSqlBuilder().WithDatabase(DatabaseName)
             .WithUsername(DbUser).WithPassword(DbPassword).WithImage("postgres:16.3").WithCleanUp(true).Build();
         await _postgres.StartAsync();
-        
+
         _appFactory =
             new VersioningManagerWebApplicationFactory(_postgres.GetConnectionString());
 

@@ -82,7 +82,7 @@ public interface IUsersClientV1
     /// <returns>The collection of users roles.</returns>
     /// <exception cref="VersioningManagerApiException{TError}">The server response error.</exception>
     /// <exception cref="VersioningManagerApiException{String}">The internal service error.</exception>
-    Task<IReadOnlyCollection<string>> GetUsersRolesAsync(string jwt, CancellationToken token = default);
+    Task<UserRolesInfoResponse> GetUsersRolesAsync(string jwt, CancellationToken token = default);
 
     /// <summary>
     ///     Changes the user role.

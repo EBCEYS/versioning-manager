@@ -65,9 +65,9 @@ internal class UsersClientV1 : ClientBase, IUsersClientV1
             GetJwtHeaders(jwt), token);
     }
 
-    public async Task<IReadOnlyCollection<string>> GetUsersRolesAsync(string jwt, CancellationToken token = default)
+    public async Task<UserRolesInfoResponse> GetUsersRolesAsync(string jwt, CancellationToken token = default)
     {
-        return await GetJsonAsync<string[], ProblemDetails>(url => url.AppendPathSegment(GetUserRolesRoute),
+        return await GetJsonAsync<UserRolesInfoResponse, ProblemDetails>(url => url.AppendPathSegment(GetUserRolesRoute),
             GetJwtHeaders(jwt), token);
     }
 

@@ -54,7 +54,7 @@ public class UsersController(
     [Authorize(Roles = RolesStorage.CreateUserRole)]
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType<string>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUserAsync([Required] [FromBody] UserCreationApiModel model)
     {
@@ -73,7 +73,7 @@ public class UsersController(
                     return Ok("User created successfully!");
                 case OperationResult.Conflict:
                     logger.LogWarning("User {username} already exists!", model.Username);
-                    return Conflict("User already exists!");
+                    return UsersConflict("User");
                 default:
                     logger.LogError("UNSUPPORTED RESULT {result}!", result.Result);
                     return InternalError();
@@ -148,7 +148,7 @@ public class UsersController(
     [ProducesResponseType<string>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType<string>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status409Conflict)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateRoleAsync([Required] [FromBody] CreateRoleModel model)
     {
@@ -172,7 +172,7 @@ public class UsersController(
 
                     return Ok("Role created successfully!");
                 case OperationResult.Conflict:
-                    return Conflict("Role already exists!");
+                    return UsersConflict("Role");
                 default:
                     logger.LogError("UNSUPPORTED RESULT {result}!", creationResult.Result);
                     return InternalError();
@@ -281,13 +281,22 @@ public class UsersController(
     /// <response code="500">Internal error.</response>
     [HttpGet(GetUserRolesRoute)]
     [Authorize(Roles = RolesStorage.GetUserRolesRole)]
-    [ProducesResponseType<IEnumerable<string>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<UserRolesInfoResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetUserRolesAsync()
     {
         try
         {
-            return Ok(await units.GetAllRolesAsync(HttpContext.RequestAborted));
+            var roles = await units.GetAllRolesAsync(HttpContext.RequestAborted);
+            var rolesResponse = new UserRolesInfoResponse
+            {
+                Roles = roles.Select(r => new UserRoleInfo
+                {
+                    Name = r.Name,
+                    Roles = r.Roles.ToArray()
+                }).ToArray()
+            };
+            return Ok(rolesResponse);
         }
         catch (Exception ex)
         {
@@ -454,7 +463,7 @@ public class UsersController(
     [HttpDelete(DeleteUserRoute)]
     [Authorize(Roles = RolesStorage.DeleteUserRole)]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status304NotModified)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DeleteUserAsync(
@@ -475,7 +484,7 @@ public class UsersController(
                 case OperationResult.Success:
                     return Ok();
                 case OperationResult.NotFound:
-                    return StatusCode(StatusCodes.Status304NotModified);
+                    return NotFoundProblem("User");
                 case OperationResult.Conflict:
                 case OperationResult.Failure:
                 default:
@@ -617,6 +626,12 @@ public class UsersController(
     {
         return Problem("Internal database error!", GetType().Name, StatusCodes.Status500InternalServerError,
             "Internal database error!");
+    }
+
+    private ObjectResult UsersConflict(string name)
+    {
+        return Problem($"{name} already exists!", GetType().Name, StatusCodes.Status409Conflict,
+            $"Invalid {name}!");
     }
 
     private ObjectResult WrongUserNameProblem()

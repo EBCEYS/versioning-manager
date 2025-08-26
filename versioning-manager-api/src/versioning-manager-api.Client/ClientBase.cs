@@ -217,8 +217,9 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
 
     private static Url FormatUri(Action<Url> urlAction, Url url)
     {
-        urlAction.Invoke(url);
-        return url;
+        var clone = url.Clone();
+        urlAction.Invoke(clone);
+        return clone;
     }
 
     /// <summary>

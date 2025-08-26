@@ -9,9 +9,9 @@ namespace versioning_manager_api.IntegrationTests;
 [SetUpFixture]
 public class TestsContext
 {
-    public const string DatabaseName = "versioningmanager";
-    public const string DbUser = "postgres";
-    public const string DbPassword = "postgres";
+    private const string DatabaseName = "versioningmanager";
+    private const string DbUser = "postgres";
+    private const string DbPassword = "postgres";
 
     public const string DefaultUsername = "user";
     public const string DefaultPassword = "password";
@@ -32,7 +32,7 @@ public class TestsContext
         _postgres = new PostgreSqlBuilder().WithDatabase(DatabaseName)
             .WithUsername(DbUser).WithPassword(DbPassword).WithImage("postgres:16.3").WithCleanUp(true).Build();
         await _postgres.StartAsync();
-
+        
         _appFactory =
             new VersioningManagerWebApplicationFactory(_postgres.GetConnectionString());
 

@@ -151,7 +151,8 @@ public class UserUnits(VmDatabaseContext db)
 
     public async Task<DbUser?> GetUserAsync(string username, CancellationToken token = default)
     {
+        username = username.ToLowerInvariant();
         return await db.Users.Include(u => u.Role).AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Username.Equals(username, StringComparison.InvariantCultureIgnoreCase), token);
+            .FirstOrDefaultAsync(u => u.Username == username, token);
     }
 }

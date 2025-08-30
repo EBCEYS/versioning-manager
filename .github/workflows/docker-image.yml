@@ -53,8 +53,8 @@ jobs:
       - name: Build and push Docker image (ServiceUploader)
         uses: docker/build-push-action@v5
         with:
-          context: ${{ env.SERV_UPLOADER_DIR }}/
-          file: ${{ env.SERV_UPLOADER_DIR }}/Dockerfile
+          context: /
+          file: /Dockerfile_ServiceUploader
           push: true
           tags: |
             ${{ env.SERV_UPLOADER_DOCKER_IMAGE }}:latest

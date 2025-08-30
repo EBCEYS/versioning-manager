@@ -13,9 +13,10 @@ namespace versioning_manager_api.Client.Services;
 internal class DeviceAdministrationClientV1 : ClientBase, IDeviceAdministrationClientV1
 {
     public DeviceAdministrationClientV1(string serverAddress, TimeSpan? timeout) : base(
-        new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
+        new FlurlClient(serverAddress),
         timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web)
     {
+        BaseUrl = BaseUrl.AppendPathSegment(GetBaseRoute());
     }
 
     public DeviceAdministrationClientV1(HttpClient client) : base(new FlurlClient(client), client.Timeout,

@@ -303,8 +303,10 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
         var url = FormatUri(urlAction, BaseUrl);
         var request = PrepareRequest(headers, url);
 
-        var response = await request.AllowAnyHttpStatus()
-            .PostAsync(new StreamContent(stream), cancellationToken: token);
+        var response = await request.AllowAnyHttpStatus().PostMultipartAsync(content =>
+        {
+            content.AddFile("file", stream, "image.tar", "application/x-tar");
+        }, HttpCompletionOption.ResponseContentRead, token);
 
         await ProcessResponse<TError>(response, token);
     }

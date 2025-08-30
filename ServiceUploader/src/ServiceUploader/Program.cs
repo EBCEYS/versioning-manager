@@ -28,7 +28,11 @@ internal class Program
                                                      "\t--project-name\n" +
                                                      $"{Modes.Update} - uploads images to docker (connecting by --uri). Images archives will be taken from current working directory.\n" +
                                                      "Options:\n" +
-                                                     "\t--uri [optional]\n";
+                                                     "\t--uri [optional]\n" +
+                                                     $"{Modes.Post} - uploads the image file to server.\n" +
+                                                     "Options: \n" + 
+                                                     "\t-t|--token\n" +
+                                                     "\t--compose-path - path to image.tar file\n";
 
     private static string IfNotSpecifiedString(string envKey)
     {
@@ -126,12 +130,31 @@ internal class Program
                     case Modes.Update:
                         await Update(uri);
                         break;
+                    case Modes.Post:
+                        if (string.IsNullOrWhiteSpace(token))
+                            throw new InvalidOperationException("The token used to start application");
+                        if (string.IsNullOrWhiteSpace(compose) || !File.Exists(compose))
+                            throw new InvalidOperationException("The image.tar file should exist!");
+                        if (string.IsNullOrWhiteSpace(uri))
+                            throw new ArgumentException("Value cannot be null or whitespace.", nameof(uri));
+                        await Post(uri, token, compose);
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(mode), mode, "Mode parameter out of range");
                 }
             }, modeOption, tokenOption, uriOption, imageTagOption, projectNameOption, serviceNameOption, versionOption,
             dockerComposePath);
         return root.Invoke(args);
+    }
+
+    private static async Task Post(string uri, string token, string file)
+    {
+        Uri path = new(uri);
+        Console.WriteLine($"Send image archive {file} to server: {path}");
+        VersioningManagerClient client = new(path, token, TimeSpan.FromMinutes(10.0));
+        await using var fileStream = File.OpenRead(file);
+        await client.PostImageAsync(fileStream);
+        Console.WriteLine("Done!");
     }
 
     private static async Task Load(string? uri, string token, string? image, string? project, string? service,
@@ -187,8 +210,9 @@ internal class Program
         }
 
         Console.WriteLine("Select project version:");
-        var entry = SelectOne(info.ActualEntries);
-        Console.WriteLine($"Selected entry {entry}");
+        var entryVersion = SelectOne(info.ActualEntries.Select(x => x.Version));
+        var entry = info.ActualEntries.First(e => e.Version == entryVersion);
+        Console.WriteLine($"Selected entry {entry.Version}");
         if (!entry.Images.Any())
         {
             Console.WriteLine("No images found.");
@@ -299,5 +323,6 @@ internal enum Modes
 {
     Load,
     Save,
-    Update
+    Update,
+    Post
 }

@@ -13,9 +13,10 @@ namespace versioning_manager_api.Client.Services;
 internal class ProjectAdministrationClientV1 : ClientBase, IProjectAdministrationClientV1
 {
     public ProjectAdministrationClientV1(string serverAddress, TimeSpan? timeout) : base(
-        new FlurlClient(serverAddress.AppendPathSegment(GetBaseRoute())),
+        new FlurlClient(serverAddress),
         timeout ?? TimeSpan.FromSeconds(10), JsonSerializerOptions.Web)
     {
+        BaseUrl = BaseUrl.AppendPathSegment(GetBaseRoute());
     }
 
     public ProjectAdministrationClientV1(HttpClient client) : base(new FlurlClient(client), client.Timeout,

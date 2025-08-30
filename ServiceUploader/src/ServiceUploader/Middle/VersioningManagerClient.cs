@@ -28,7 +28,6 @@ internal class VersioningManagerClient
         Action<long, double> finishCallback)
     {
         var stream = await _client.DownloadImageAsync(id, _token);
-        stream.Seek(0, SeekOrigin.Begin);
         await stream.DownloadFileAsync(destinationPath, progressCallback, finishCallback,
             TimeSpan.FromSeconds(1));
     }
@@ -41,5 +40,10 @@ internal class VersioningManagerClient
     public async Task<Stream> GetProjectComposeAsync(int id)
     {
         return await _client.GetDockerComposeFileAsync(id, _token);
+    }
+
+    public async Task PostImageAsync(Stream fileStream)
+    {
+        await _client.UploadImageFileAsync(fileStream, _token);
     }
 }

@@ -27,8 +27,8 @@ namespace versioning_manager_api.Controllers.V1;
 [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
 public class ProjectController : ControllerBase
 {
-    private readonly ILogger<ProjectController> logger;
-    private readonly ImageUnits unit;
+    private readonly ILogger<ProjectController> _logger;
+    private readonly ImageUnits _unit;
 
     /// <summary>
     ///     Initiates a new instance of <see cref="ProjectController" />.
@@ -38,8 +38,8 @@ public class ProjectController : ControllerBase
     /// <exception cref="ApiKeyRequireException"></exception>
     public ProjectController(ILogger<ProjectController> logger, ImageUnits unit)
     {
-        this.logger = logger;
-        this.unit = unit;
+        _logger = logger;
+        _unit = unit;
     }
 
     private ApiKeyEntity Requester => HttpContext.Items[ApikeyStorage.ApikeyHeader] as ApiKeyEntity ??
@@ -53,28 +53,16 @@ public class ProjectController : ControllerBase
     /// <response code="404">Image not found in database or registry.</response>
     /// <response code="500">Internal error.</response>
     [HttpGet(DownloadImageRoute)]
+    [Produces("application/x-tar")]
     [ProducesResponseType<FileStream>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> DownloadImageAsync([Required] [FromQuery] int id)
     {
-        try
-        {
-            var imageStream = await unit.GetImageFileAsync(id, HttpContext.RequestAborted);
-            if (imageStream == null) return NotFoundProblem("Image");
+        var imageStream = await _unit.GetImageFileAsync(id, HttpContext.RequestAborted);
+        if (imageStream == null) return NotFoundProblem("Image");
 
-            return File(imageStream, "application/x-tar");
-        }
-        catch (DockerImageNotFoundException ex)
-        {
-            logger.LogError(ex, "Docker image {id} not found", id);
-            return NotFoundProblem("Image");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on downloading image!");
-            return InternalError();
-        }
+        return File(imageStream, "application/x-tar");
     }
 
     /// <summary>
@@ -94,19 +82,11 @@ public class ProjectController : ControllerBase
     public async Task<IActionResult> UploadImageAsync([Required] IFormFile file)
     {
         var requester = Requester;
-        using var scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
-        try
-        {
-            var imageStream = file.OpenReadStream();
-            imageStream.Seek(0, SeekOrigin.Begin);
-            await unit.UploadImageAsync(imageStream, HttpContext.RequestAborted);
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on uploading image info!");
-            return InternalError();
-        }
+        using var scope = _logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
+        var imageStream = file.OpenReadStream();
+        imageStream.Seek(0, SeekOrigin.Begin);
+        await _unit.UploadImageAsync(imageStream, HttpContext.RequestAborted);
+        return Ok();
     }
 
     /// <summary>
@@ -125,21 +105,21 @@ public class ProjectController : ControllerBase
     public async Task<IActionResult> UploadImageInfoAsync([Required] [FromBody] UploadImageInfoModel model)
     {
         var requester = Requester;
-        using var scope = logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
+        using var scope = _logger.BeginScope("Device {id} try to upload image info", requester.DeviceId);
         try
         {
             var result =
-                await unit.UploadImageInfoAsync(model, requester.DeviceId, HttpContext.RequestAborted);
+                await _unit.UploadImageInfoAsync(model, requester.DeviceId, HttpContext.RequestAborted);
             switch (result)
             {
                 case OperationResult.Success:
-                    logger.LogInformation("Image {tag} info uploaded successfully", model.ImageTag);
+                    _logger.LogInformation("Image {tag} info uploaded successfully", model.ImageTag);
                     return Ok();
                 case OperationResult.Failure:
-                    logger.LogWarning("Device {id} is not registered!", requester.DeviceId);
+                    _logger.LogWarning("Device {id} is not registered!", requester.DeviceId);
                     return Problem("Device not registered!", GetType().Name, StatusCodes.Status403Forbidden);
                 case OperationResult.NotFound:
-                    logger.LogWarning("Project {name} not found", model.ProjectName);
+                    _logger.LogWarning("Project {name} not found", model.ProjectName);
                     return NotFoundProblem("Project");
                 case OperationResult.Conflict:
                 default:
@@ -148,13 +128,8 @@ public class ProjectController : ControllerBase
         }
         catch (DockerImageNotFoundException ex)
         {
-            logger.LogError(ex, "Docker image {tag} not found", model.ImageTag);
+            _logger.LogError(ex, "Docker image {tag} not found", model.ImageTag);
             return NotFoundProblem("Image");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on uploading image info!");
-            return InternalError();
         }
     }
 
@@ -174,16 +149,8 @@ public class ProjectController : ControllerBase
         [Required] [FromRoute] [MaxLength(FieldsLimits.MaxProjectName)]
         string name)
     {
-        try
-        {
-            var info = await unit.GetProjectInfoAsync(name, HttpContext.RequestAborted);
-            return !info.ActualEntries.Any() ? NotFoundProblem("Actual project") : Ok(info);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting project info!");
-            return InternalError();
-        }
+        var info = await _unit.GetProjectInfoAsync(name, HttpContext.RequestAborted);
+        return !info.ActualEntries.Any() ? NotFoundProblem("Actual project") : Ok(info);
     }
 
     /// <summary>
@@ -200,26 +167,12 @@ public class ProjectController : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProjectCompose([Required] [FromRoute] int id)
     {
-        using var scope = logger.BeginScope("Device {id} requested docker-compose file", Requester.DeviceId);
-        try
-        {
-            var result = await unit.GetProjectDockerComposeAsync(id, HttpContext.RequestAborted);
-            if (result == null) return NotFoundProblem("Project entry");
+        using var scope = _logger.BeginScope("Device {id} requested docker-compose file", Requester.DeviceId);
+        var result = await _unit.GetProjectDockerComposeAsync(id, HttpContext.RequestAborted);
+        if (result == null) return NotFoundProblem("Project entry");
 
-            result.Seek(0, SeekOrigin.Begin);
-            return File(result, "application/x-yaml");
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting project compose file!");
-            return InternalError();
-        }
-    }
-
-    private ObjectResult InternalError()
-    {
-        return Problem("Internal database error!", GetType().Name, StatusCodes.Status500InternalServerError,
-            "Internal database error!");
+        result.Seek(0, SeekOrigin.Begin);
+        return File(result, "application/x-yaml");
     }
 
     private ObjectResult NotFoundProblem(string name)

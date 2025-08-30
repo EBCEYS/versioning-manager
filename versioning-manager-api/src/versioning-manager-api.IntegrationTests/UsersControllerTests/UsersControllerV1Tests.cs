@@ -9,7 +9,6 @@ using versioning_manager_api.Models.Requests.Users;
 
 namespace versioning_manager_api.IntegrationTests.UsersControllerTests;
 
-[SingleThreaded]
 public class UsersControllerV1Tests : IntegrationTestBase
 {
     private IUsersClientV1 _client;

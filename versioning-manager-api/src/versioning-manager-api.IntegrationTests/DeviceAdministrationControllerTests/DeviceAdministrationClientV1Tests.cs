@@ -7,7 +7,6 @@ using versioning_manager_api.Models.Requests.Users;
 
 namespace versioning_manager_api.IntegrationTests.DeviceAdministrationControllerTests;
 
-[SingleThreaded]
 public class DeviceAdministrationClientV1Tests : IntegrationTestBase
 {
     private IDeviceAdministrationClientV1 _client;
@@ -17,7 +16,7 @@ public class DeviceAdministrationClientV1Tests : IntegrationTestBase
     public async Task Setup()
     {
         await ResetAsync();
-        _validToken = (await Client.UsersClient.LoginAsync(new UserLoginModel()
+        _validToken = (await Client.UsersClient.LoginAsync(new UserLoginModel
         {
             Username = TestsContext.DefaultUsername,
             Password = TestsContext.DefaultPassword
@@ -51,13 +50,13 @@ public class DeviceAdministrationClientV1Tests : IntegrationTestBase
             ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
         }, _validToken);
 
-        var refreshed = await _client.RefreshDeviceAsync(new UpdateDeviceModel()
+        var refreshed = await _client.RefreshDeviceAsync(new UpdateDeviceModel
         {
             DeviceKey = device.DeviceId,
             ExpiresUtc = device.Expires!.Value.AddHours(1),
             Source = "some_source"
         }, _validToken);
-        
+
         refreshed.ApiKey.Should().NotBeNullOrWhiteSpace();
         refreshed.Source.Should().NotBeNullOrWhiteSpace();
         refreshed.DeviceId.Should().NotBe(Guid.Empty);
@@ -75,19 +74,19 @@ public class DeviceAdministrationClientV1Tests : IntegrationTestBase
             Source = "test_source",
             ExpiresUtc = DateTimeOffset.UtcNow.AddHours(1)
         }, _validToken);
-        
+
         await _client.DeleteDeviceAsync(device.DeviceId, _validToken);
-        
+
         var getDevice = await _client.GetDeviceAsync(device.DeviceId, _validToken);
         var activeDevices = await _client.GetActiveDevicesAsync(_validToken);
-        
+
         getDevice!.IsActive.Should().BeFalse();
         activeDevices.Should().BeEmpty();
     }
+
     [TestCase(5)]
     public async Task When_GetDevices_Result_ExpectedNum(byte num)
     {
-
         var deviceId = Guid.Empty;
         for (var i = 0; i < num; i++)
         {

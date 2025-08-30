@@ -23,12 +23,22 @@ public class VmDatabaseContext : Microsoft.EntityFrameworkCore.DbContext
     {
     }
 
-    public virtual DbSet<DbUser> Users { get; set; }
-    public virtual DbSet<DbRole> Roles { get; set; }
-    public virtual DbSet<DbProject> Projects { get; set; }
-    public virtual DbSet<DbProjectEntry> ProjectEntries { get; set; }
-    public virtual DbSet<DbImageInfo> Images { get; set; }
-    public virtual DbSet<DbDevice> Devices { get; set; }
+    public virtual DbSet<DbUser> Users => Set<DbUser>();
+    public virtual DbSet<DbRole> Roles => Set<DbRole>();
+    public virtual DbSet<DbProject> Projects => Set<DbProject>();
+    public virtual DbSet<DbProjectEntry> ProjectEntries => Set<DbProjectEntry>();
+    public virtual DbSet<DbImageInfo> Images => Set<DbImageInfo>();
+    public virtual DbSet<DbDevice> Devices => Set<DbDevice>();
+
+    public async Task MigrateIfNeededAsync(CancellationToken token = default)
+    {
+        if (await IsMigrationNeededAsync(token)) await Database.MigrateAsync(token);
+    }
+
+    private async Task<bool> IsMigrationNeededAsync(CancellationToken token = default)
+    {
+        return (await Database.GetPendingMigrationsAsync(token)).Any();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

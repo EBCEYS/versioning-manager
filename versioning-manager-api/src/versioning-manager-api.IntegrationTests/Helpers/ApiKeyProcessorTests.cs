@@ -1,51 +1,32 @@
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using versioning_manager_api.DbContext.DevDatabase;
+using versioning_manager_api.IntegrationTests.Mocks;
+using versioning_manager_api.IntegrationTests.TestData;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.CryptsProcess;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.SystemObjects.Options;
-using versioning_manager_api.UnitTests.Mocks;
 
-namespace versioning_manager_api.UnitTests.Helpers;
+namespace versioning_manager_api.IntegrationTests.Helpers;
 
-public class ApiKeyProcessorTests
+public class ApiKeyProcessorTests : IntegrationTestBase
 {
-    private const string CryptKeyFilePath = "keyFile";
-    private const string CryptIvFilePath = "IVFile";
+    private const string CryptKeyFilePath = FilesCreator.CryptKeyFilePath;
+    private const string CryptIvFilePath = FilesCreator.CryptIvFilePath;
     private const string Prefix = "abc_";
 
     private ApiKeyProcessor _apiKeyProcessor;
-    private VmDatabaseDbContextMockHelper _dbContextHelper;
+    private VmDatabaseContext _dbCotext;
     private HashHelper _hashHelper;
 
-    [OneTimeSetUp]
-    public async Task OneTimeSetup()
-    {
-        var keyBytes = new byte[64];
-        var ivBytes = new byte[64];
-        Random.Shared.NextBytes(keyBytes);
-        Random.Shared.NextBytes(ivBytes);
-        await Task.WhenAll(File.WriteAllBytesAsync(CryptKeyFilePath, keyBytes),
-            File.WriteAllBytesAsync(CryptIvFilePath, ivBytes));
-    }
-
-    [OneTimeTearDown]
-    public void Teardown()
-    {
-        RemoveFileIfExists(CryptKeyFilePath);
-        RemoveFileIfExists(CryptIvFilePath);
-        return;
-
-        void RemoveFileIfExists(string filePath)
-        {
-            if (File.Exists(filePath)) File.Delete(filePath);
-        }
-    }
-
     [SetUp]
-    public void Initialize()
+    public async Task Initialize()
     {
+        await ResetAsync();
+        _dbCotext = DbContext;
+        await _dbCotext.Devices.AsQueryable().ExecuteDeleteAsync();
         OptionsWrapper<ApiKeyOptions> options = new(new ApiKeyOptions
         {
             CryptKeyFilePath = CryptKeyFilePath,
@@ -56,8 +37,6 @@ public class ApiKeyProcessorTests
         _apiKeyProcessor = new ApiKeyProcessor(cryptHelper);
 
         _hashHelper = new HashHelper();
-
-        _dbContextHelper = new VmDatabaseDbContextMockHelper();
     }
 
     [TestCaseSource(nameof(GetDataForTests))]
@@ -91,10 +70,10 @@ public class ApiKeyProcessorTests
 
         var salt = _hashHelper.GenerateSalt();
 
-        AddDeviceWithUser(id, source, expires, salt, apiKey);
+        await AddDeviceWithUser(id, source, expires, salt, apiKey);
 
         var result =
-            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbCotext, _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.Valid);
@@ -116,10 +95,10 @@ public class ApiKeyProcessorTests
 
         var salt = _hashHelper.GenerateSalt();
 
-        AddDeviceWithUser(id, source, expires, salt, apiKey);
+        await AddDeviceWithUser(id, source, expires, salt, apiKey);
 
         var result =
-            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbCotext, _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.Expired);
@@ -146,10 +125,10 @@ public class ApiKeyProcessorTests
 
         var salt = _hashHelper.GenerateSalt();
 
-        AddDeviceWithUser(id, "AnotherSalt", expires, salt, apiKey);
+        await AddDeviceWithUser(id, "AnotherSalt", expires, salt, apiKey);
 
         var result =
-            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbCotext, _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.IncorrectSource);
@@ -166,10 +145,10 @@ public class ApiKeyProcessorTests
 
         var salt = _hashHelper.GenerateSalt();
 
-        AddDeviceWithUser(id, source, expires, salt, apiKey);
+        await AddDeviceWithUser(id, source, expires, salt, apiKey);
 
         var result =
-            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbCotext, _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.IncorrectKey);
@@ -185,27 +164,20 @@ public class ApiKeyProcessorTests
         var apiKey = _apiKeyProcessor.Generate(id, source, expires);
 
         var result =
-            await _apiKeyProcessor.ValidateAsync(apiKey, _dbContextHelper.Initialize(), _hashHelper);
+            await _apiKeyProcessor.ValidateAsync(apiKey, _dbCotext, _hashHelper);
 
         apiKey.StartsWith(Prefix).Should().BeTrue();
         result.Item1.Should().Be(ApiKeyValidationResult.DeviceNotFound);
         result.Item2.Should().NotBeNull();
     }
 
-    private void AddDeviceWithUser(Guid id, string source, DateTimeOffset expires, string salt, string apiKey)
+    private async Task AddDeviceWithUser(Guid id, string source, DateTimeOffset expires, string salt, string apiKey)
     {
-        _dbContextHelper.Devices.Add(new DbDevice
+        var creator = await _dbCotext.Users.FirstAsync(u => u.Username == TestsContext.DefaultUsername);
+        await _dbCotext.Devices.AddAsync(new DbDevice
         {
             CreationUTC = DateTimeOffset.UtcNow,
-            Creator = new DbUser
-            {
-                IsActive = true,
-                Salt = salt,
-                Password = _hashHelper.Hash("password", salt),
-                Username = "Vitaliy",
-                CreationUtc = DateTimeOffset.UtcNow
-            },
-            CreatorId = 1,
+            Creator = creator,
             ExpireUTC = expires,
             Id = id,
             IsActive = true,
@@ -213,5 +185,6 @@ public class ApiKeyProcessorTests
             Salt = salt,
             SourceHash = _hashHelper.Hash(source, _hashHelper.DefaultSalt)
         });
+        await _dbCotext.SaveChangesAsync();
     }
 }

@@ -12,9 +12,9 @@ public abstract class IntegrationTestBase
 
     protected static async Task ResetAsync()
     {
-        await TestsContext.SetUpApplicationAsync();
-        var scope = TestsContext.Context.Services.CreateScope();
+        var context = await TestsContext.GetTestContextAsync();
+        var scope = context.Services.CreateScope();
         DbContext = scope.ServiceProvider.GetRequiredService<VmDatabaseContext>();
-        Client = TestsContext.Context.Client;
+        Client = context.Client;
     }
 }

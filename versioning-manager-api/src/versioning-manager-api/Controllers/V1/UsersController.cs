@@ -63,26 +63,18 @@ public class UsersController(
         using var scope = logger.BeginScope("User {creator} try to create new user", User.GetUserName());
 
         logger.LogDebug("Try create new user {username}", model.Username);
-        try
+        var result = await units.CreateUserIfNotExistsAsync(model, hasher);
+        switch (result.Result)
         {
-            var result = await units.CreateUserIfNotExistsAsync(model, hasher);
-            switch (result.Result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("User {username} created successfully!", model.Username);
-                    return Ok("User created successfully!");
-                case OperationResult.Conflict:
-                    logger.LogWarning("User {username} already exists!", model.Username);
-                    return UsersConflict("User");
-                default:
-                    logger.LogError("UNSUPPORTED RESULT {result}!", result.Result);
-                    return InternalError();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on creating user!");
-            return InternalError();
+            case OperationResult.Success:
+                logger.LogInformation("User {username} created successfully!", model.Username);
+                return Ok("User created successfully!");
+            case OperationResult.Conflict:
+                logger.LogWarning("User {username} already exists!", model.Username);
+                return UsersConflict("User");
+            default:
+                logger.LogError("UNSUPPORTED RESULT {result}!", result.Result);
+                return InternalError();
         }
     }
 
@@ -102,32 +94,24 @@ public class UsersController(
     {
         using var scope = logger.BeginScope("Try login user {name}", model.Username);
         logger.LogInformation("Try login user {name}", model.Username);
-        try
+        var user = await units.LoginUserAsync(model, hasher);
+        if (user.IsNotFound() || user.Object == null) return NotFoundProblem("User");
+
+        if (!user.IsSuccess())
         {
-            var user = await units.LoginUserAsync(model, hasher);
-            if (user.IsNotFound() || user.Object == null) return NotFoundProblem("User");
-
-            if (!user.IsSuccess())
-            {
-                logger.LogError("UNSUPPORTED RESULT {result}!", user.Result);
-                return InternalError();
-            }
-
-            var sessionId = Guid.NewGuid().ToString("N");
-            var token = GenerateJwt(user.Object.Username, user.Object.Role?.Roles, sessionId);
-            TokenResponseModel response = new(user.Object.Username, token, sessionId, user.Object.Role?.Roles,
-                jwtOpts.Value.TokenTimeToLive);
-
-            cache.Set(sessionId, response, jwtOpts.Value.TokenTimeToLive);
-
-            logger.LogInformation("Successfully login user {name}", model.Username);
-            return Ok(response);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on auth user!");
+            logger.LogError("UNSUPPORTED RESULT {result}!", user.Result);
             return InternalError();
         }
+
+        var sessionId = Guid.NewGuid().ToString("N");
+        var token = GenerateJwt(user.Object.Username, user.Object.Role?.Roles, sessionId);
+        TokenResponseModel response = new(user.Object.Username, token, sessionId, user.Object.Role?.Roles,
+            jwtOpts.Value.TokenTimeToLive);
+
+        cache.Set(sessionId, response, jwtOpts.Value.TokenTimeToLive);
+
+        logger.LogInformation("Successfully login user {name}", model.Username);
+        return Ok(response);
     }
 
     /// <summary>
@@ -163,25 +147,17 @@ public class UsersController(
                 400);
         }
 
-        try
+        var creationResult = await units.CreateRoleAsync(model);
+        switch (creationResult.Result)
         {
-            var creationResult = await units.CreateRoleAsync(model);
-            switch (creationResult.Result)
-            {
-                case OperationResult.Success:
+            case OperationResult.Success:
 
-                    return Ok("Role created successfully!");
-                case OperationResult.Conflict:
-                    return UsersConflict("Role");
-                default:
-                    logger.LogError("UNSUPPORTED RESULT {result}!", creationResult.Result);
-                    return InternalError();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on creating new role!");
-            return InternalError();
+                return Ok("Role created successfully!");
+            case OperationResult.Conflict:
+                return UsersConflict("Role");
+            default:
+                logger.LogError("UNSUPPORTED RESULT {result}!", creationResult.Result);
+                return InternalError();
         }
     }
 
@@ -204,30 +180,22 @@ public class UsersController(
         [Required] [FromBody] ChangePasswordModel model)
     {
         using var scope = logger.BeginScope("Try change password for user {username}", username);
-        try
+        var result =
+            await units.ChangePasswordAsync(username, model, hasher, HttpContext.RequestAborted);
+        switch (result.Result)
         {
-            var result =
-                await units.ChangePasswordAsync(username, model, hasher, HttpContext.RequestAborted);
-            switch (result.Result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("Password changed successfully!");
-                    return Ok("Password changed successfully!");
-                case OperationResult.Failure:
-                    logger.LogInformation("Incorrect current password!");
-                    return Problem("Incorrect current password!", GetType().Name, 400);
-                case OperationResult.NotFound:
-                    logger.LogInformation("User not found!");
-                    return NotFoundProblem("User");
-                default:
-                    logger.LogError("UNSUPPORTED RESULT {result}!", result.Result);
-                    return InternalError();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on changing password!");
-            return InternalError();
+            case OperationResult.Success:
+                logger.LogInformation("Password changed successfully!");
+                return Ok("Password changed successfully!");
+            case OperationResult.Failure:
+                logger.LogInformation("Incorrect current password!");
+                return Problem("Incorrect current password!", GetType().Name, 400);
+            case OperationResult.NotFound:
+                logger.LogInformation("User not found!");
+                return NotFoundProblem("User");
+            default:
+                logger.LogError("UNSUPPORTED RESULT {result}!", result.Result);
+                return InternalError();
         }
     }
 
@@ -251,15 +219,7 @@ public class UsersController(
         if (username == null) return WrongUserNameProblem();
 
         logger.LogInformation("Try self change password for user {username}", username);
-        try
-        {
-            return await ChangePasswordAsync(username, model);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on self changing password!");
-            return InternalError();
-        }
+        return await ChangePasswordAsync(username, model);
     }
 
     /// <summary>
@@ -285,24 +245,16 @@ public class UsersController(
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetUserRolesAsync()
     {
-        try
+        var roles = await units.GetAllRolesAsync(HttpContext.RequestAborted);
+        var rolesResponse = new UserRolesInfoResponse
         {
-            var roles = await units.GetAllRolesAsync(HttpContext.RequestAborted);
-            var rolesResponse = new UserRolesInfoResponse
+            Roles = roles.Select(r => new UserRoleInfo
             {
-                Roles = roles.Select(r => new UserRoleInfo
-                {
-                    Name = r.Name,
-                    Roles = r.Roles.ToArray()
-                }).ToArray()
-            };
-            return Ok(rolesResponse);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting user roles!");
-            return InternalError();
-        }
+                Name = r.Name,
+                Roles = r.Roles.ToArray()
+            }).ToArray()
+        };
+        return Ok(rolesResponse);
     }
 
     /// <summary>
@@ -329,26 +281,18 @@ public class UsersController(
 
         using var scope = logger.BeginScope("User {updater} try change user {username} role to {role}",
             updater, username, newRole);
-        try
+        var result = await units.ChangeUserRoleAsync(username, newRole, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result = await units.ChangeUserRoleAsync(username, newRole, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    return Ok();
-                case OperationResult.NotFound:
-                    return NotFoundProblem("User or role");
-                case OperationResult.Failure:
-                case OperationResult.Conflict:
-                default:
-                    logger.LogError("Operation result {result} is not supported!", result);
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on updating user role!");
-            return InternalError();
+            case OperationResult.Success:
+                return Ok();
+            case OperationResult.NotFound:
+                return NotFoundProblem("User or role");
+            case OperationResult.Failure:
+            case OperationResult.Conflict:
+            default:
+                logger.LogError("Operation result {result} is not supported!", result);
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -374,25 +318,17 @@ public class UsersController(
         if (username == null) return WrongUserNameProblem();
 
         using var scope = logger.BeginScope("User {username} try delete role {role}", username, role);
-        try
+        var result = await units.DeleteRoleAsync(role, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result = await units.DeleteRoleAsync(role, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    return Ok();
-                case OperationResult.NotFound:
-                    return NotFoundProblem("Role");
-                case OperationResult.Failure:
-                case OperationResult.Conflict:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on deleting role!");
-            return InternalError();
+            case OperationResult.Success:
+                return Ok();
+            case OperationResult.NotFound:
+                return NotFoundProblem("Role");
+            case OperationResult.Failure:
+            case OperationResult.Conflict:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -430,25 +366,17 @@ public class UsersController(
                 400);
         }
 
-        try
+        var result = await units.UpdateRoleAsync(role, enumerable, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result = await units.UpdateRoleAsync(role, enumerable, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    return Ok();
-                case OperationResult.NotFound:
-                    return NotFoundProblem("Role");
-                case OperationResult.Failure:
-                case OperationResult.Conflict:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on updating role!");
-            return InternalError();
+            case OperationResult.Success:
+                return Ok();
+            case OperationResult.NotFound:
+                return NotFoundProblem("Role");
+            case OperationResult.Failure:
+            case OperationResult.Conflict:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -475,26 +403,18 @@ public class UsersController(
 
         using var scope =
             logger.BeginScope("User {updater} try delete user {username}", updater, username);
-        try
+        var result =
+            await units.UpdateUserIsActiveAsync(username, false, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result =
-                await units.UpdateUserIsActiveAsync(username, false, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    return Ok();
-                case OperationResult.NotFound:
-                    return NotFoundProblem("User");
-                case OperationResult.Conflict:
-                case OperationResult.Failure:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on deleting user!");
-            return InternalError();
+            case OperationResult.Success:
+                return Ok();
+            case OperationResult.NotFound:
+                return NotFoundProblem("User");
+            case OperationResult.Conflict:
+            case OperationResult.Failure:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -521,26 +441,18 @@ public class UsersController(
 
         using var scope =
             logger.BeginScope("User {updater} try delete user {username}", updater, username);
-        try
+        var result =
+            await units.UpdateUserIsActiveAsync(username, true, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result =
-                await units.UpdateUserIsActiveAsync(username, true, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    return Ok();
-                case OperationResult.NotFound:
-                    return StatusCode(StatusCodes.Status304NotModified);
-                case OperationResult.Conflict:
-                case OperationResult.Failure:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on deleting user!");
-            return InternalError();
+            case OperationResult.Success:
+                return Ok();
+            case OperationResult.NotFound:
+                return StatusCode(StatusCodes.Status304NotModified);
+            case OperationResult.Conflict:
+            case OperationResult.Failure:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -589,37 +501,29 @@ public class UsersController(
     public async Task<IActionResult> GetUsersAsync([Required] [FromQuery] UsersSearchType searchType,
         [FromQuery] string? username = null)
     {
-        try
+        IEnumerable<DbUser> result;
+        switch (searchType)
         {
-            IEnumerable<DbUser> result;
-            switch (searchType)
-            {
-                case UsersSearchType.All:
-                    result = await units.GetAllUsersAsync(HttpContext.RequestAborted);
-                    break;
-                case UsersSearchType.ActiveOnly:
-                    result = await units.GetActiveUsersAsync(HttpContext.RequestAborted);
-                    break;
-                case UsersSearchType.One:
-                    if (username == null)
-                        return Problem(
-                            $"If use {UsersSearchType.One} the {nameof(username)} property should be set!",
-                            GetType().Name, 400, "Incorrect params!");
+            case UsersSearchType.All:
+                result = await units.GetAllUsersAsync(HttpContext.RequestAborted);
+                break;
+            case UsersSearchType.ActiveOnly:
+                result = await units.GetActiveUsersAsync(HttpContext.RequestAborted);
+                break;
+            case UsersSearchType.One:
+                if (username == null)
+                    return Problem(
+                        $"If use {UsersSearchType.One} the {nameof(username)} property should be set!",
+                        GetType().Name, 400, "Incorrect params!");
 
-                    var user = await units.GetUserAsync(username, HttpContext.RequestAborted);
-                    result = user != null ? [user] : [];
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(searchType), searchType, null);
-            }
+                var user = await units.GetUserAsync(username, HttpContext.RequestAborted);
+                result = user != null ? [user] : [];
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(searchType), searchType, null);
+        }
 
-            return Ok(result.Select(UserInfoResponseModel.CreateFromDbEntity));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting users info!");
-            return InternalError();
-        }
+        return Ok(result.Select(UserInfoResponseModel.CreateFromDbEntity));
     }
 
     private ObjectResult InternalError()

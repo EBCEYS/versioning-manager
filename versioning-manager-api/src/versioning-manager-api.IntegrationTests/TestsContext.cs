@@ -7,6 +7,7 @@ using versioning_manager_api.IntegrationTests.TestData;
 namespace versioning_manager_api.IntegrationTests;
 
 [SetUpFixture]
+[NonParallelizable]
 public class TestsContext
 {
     private const string DatabaseName = "versioningmanager";
@@ -20,8 +21,6 @@ public class TestsContext
     private static VersioningManagerWebApplicationFactory _appFactory;
     private static PostgreSqlContainer _postgres;
 
-    internal static AppContext Context { get; private set; }
-
     [OneTimeSetUp]
     public static async Task Initialize()
     {
@@ -30,20 +29,20 @@ public class TestsContext
         await FilesCreator.Initialize();
 
         _postgres = new PostgreSqlBuilder().WithDatabase(DatabaseName)
-            .WithUsername(DbUser).WithPassword(DbPassword).WithImage("postgres:16.3").WithCleanUp(true).Build();
+            .WithUsername(DbUser).WithPassword(DbPassword) /*.WithImage("postgres:16.3").WithCleanUp(true)*/.Build();
         await _postgres.StartAsync();
 
         _appFactory =
             new VersioningManagerWebApplicationFactory(_postgres.GetConnectionString());
-
-        await SetUpApplicationAsync();
+        await GetTestContextAsync();
     }
 
-    internal static async Task SetUpApplicationAsync()
+#pragma warning disable NUnit1028
+    internal static Task<AppContext> GetTestContextAsync()
+#pragma warning restore NUnit1028
     {
-        await _appFactory.InitializeAsync();
-
-        Context = new AppContext(new VersioningManagerApiClientV1(_appFactory.BaseClient), _appFactory.Services);
+        return Task.FromResult(new AppContext(new VersioningManagerApiClientV1(_appFactory.CreateClient()),
+            _appFactory.Services));
     }
 
 
@@ -51,7 +50,6 @@ public class TestsContext
     public static async Task Cleanup()
     {
         FilesCreator.Cleanup();
-        await _appFactory.TeardownAsync();
         await _appFactory.DisposeAsync();
 
         await _postgres.DisposeAsync();

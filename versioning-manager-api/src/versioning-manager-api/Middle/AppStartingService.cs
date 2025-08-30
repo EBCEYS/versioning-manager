@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle.HashProcess;
@@ -15,28 +14,37 @@ namespace versioning_manager_api.Middle;
 public class AppStartingService(
     IServiceScopeFactory scopeFactory,
     IOptions<DefaultUserOptions> opts,
-    IHashHelper hasher) : IHostedService
+    IHashHelper hasher,
+    ILogger<AppStartingService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        using var scope = scopeFactory.CreateScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<VmDatabaseContext>();
-        var units = scope.ServiceProvider.GetRequiredService<UserUnits>();
-
-        await db.Database.MigrateAsync(cancellationToken);
-
-        var roleCreateResult = await units.CreateRoleAsync(new CreateRoleModel
+        try
         {
-            Name = opts.Value.DefaultRoleName,
-            Roles = RolesStorage.Roles.ToArray()
-        }, cancellationToken);
-        if (roleCreateResult.Result == OperationResult.Success)
-            await units.CreateUserIfNotExistsAsync(new UserCreationApiModel
+            using var scope = scopeFactory.CreateScope();
+            await using var db = scope.ServiceProvider.GetRequiredService<VmDatabaseContext>();
+            var units = scope.ServiceProvider.GetRequiredService<UserUnits>();
+
+            await db.MigrateIfNeededAsync(cancellationToken);
+
+            var roleCreateResult = await units.CreateRoleAsync(new CreateRoleModel
             {
-                Username = opts.Value.DefaultUsername,
-                Password = opts.Value.DefaultPassword,
-                Role = opts.Value.DefaultRoleName
-            }, hasher, cancellationToken);
+                Name = opts.Value.DefaultRoleName,
+                Roles = RolesStorage.Roles.ToArray()
+            }, cancellationToken);
+            if (roleCreateResult.Result == OperationResult.Success)
+                await units.CreateUserIfNotExistsAsync(new UserCreationApiModel
+                {
+                    Username = opts.Value.DefaultUsername,
+                    Password = opts.Value.DefaultPassword,
+                    Role = opts.Value.DefaultRoleName
+                }, hasher, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred during startup!");
+            throw;
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

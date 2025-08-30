@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,30 +10,16 @@ namespace versioning_manager_api.IntegrationTests.TestData;
 public class VersioningManagerWebApplicationFactory(string dbConnectionString)
     : WebApplicationFactory<Startup>
 {
-    [NotNull] public HttpClient? BaseClient { get; private set; }
-
-
-    public Task InitializeAsync()
-    {
-        BaseClient = CreateClient();
-        return Task.CompletedTask;
-    }
-
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        //builder.ConfigureTestServices(services =>
-        //{
-        //    services.AddControllers().AddApplicationPart(typeof(UsersController).Assembly);
-        //    //services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
-        //    //services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); })
-        //    //    .AddApplicationPart(typeof(Startup).Assembly).AddJsonOptions(ConfigureJsonOptions);
-        //});
-    }
-
     protected override IHostBuilder CreateHostBuilder()
     {
         return Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration(ConfigureConfiguration)
+            .ConfigureLogging(opts =>
+            {
+                opts.ClearProviders();
+                opts.SetMinimumLevel(LogLevel.Trace);
+                opts.AddConsole();
+            })
             .ConfigureWebHostDefaults(web =>
                 web.UseStartup<TestStartup>().UseEnvironment("Development"));
     }
@@ -70,10 +55,18 @@ public class VersioningManagerWebApplicationFactory(string dbConnectionString)
             { "GitlabRegistry:KeyFile", FilesCreator.GitlabKeyFilePath }
         });
     }
+}
 
-    public Task TeardownAsync()
+public class TestStartup(IConfiguration configuration) : Startup(configuration)
+{
+    public override void ConfigureServices(IServiceCollection services)
     {
-        return Task.CompletedTask;
+        base.ConfigureServices(services);
+
+        services.RemoveAll<IDockerController>();
+        services.AddSingleton<IDockerController, DockerControllerMock>();
+
+        services.AddMvc().AddApplicationPart(typeof(Startup).Assembly).AddJsonOptions(ConfigureJsonOptions);
     }
 
     private static void ConfigureJsonOptions(JsonOptions opts)
@@ -108,18 +101,5 @@ public class VersioningManagerWebApplicationFactory(string dbConnectionString)
         opts.JsonSerializerOptions.UnknownTypeHandling = webOpts.UnknownTypeHandling;
         opts.JsonSerializerOptions.UnmappedMemberHandling = webOpts.UnmappedMemberHandling;
         opts.JsonSerializerOptions.WriteIndented = webOpts.WriteIndented;
-    }
-}
-
-public class TestStartup(IConfiguration configuration) : Startup(configuration)
-{
-    public override void ConfigureServices(IServiceCollection services)
-    {
-        base.ConfigureServices(services);
-
-        services.RemoveAll<IDockerController>();
-        services.AddSingleton<IDockerController, DockerControllerMock>();
-
-        services.AddMvc().AddApplicationPart(typeof(Startup).Assembly);
     }
 }

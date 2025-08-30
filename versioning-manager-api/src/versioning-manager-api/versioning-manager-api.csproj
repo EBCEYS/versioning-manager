@@ -14,12 +14,12 @@
         <PackageReference Include="Docker.DotNet.Enhanced" Version="3.128.5"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8"/>
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.8"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.8">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
         <PackageReference Include="Serilog" Version="4.3.0"/>
         <PackageReference Include="Serilog.AspNetCore" Version="9.0.0"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3"/>

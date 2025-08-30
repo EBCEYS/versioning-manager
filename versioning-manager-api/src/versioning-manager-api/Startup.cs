@@ -11,6 +11,7 @@ using Serilog;
 using versioning_manager_api.Attributes;
 using versioning_manager_api.DbContext.DevDatabase;
 using versioning_manager_api.Middle;
+using versioning_manager_api.Middle.ActionFilters;
 using versioning_manager_api.Middle.ApiKeyProcess;
 using versioning_manager_api.Middle.CryptsProcess;
 using versioning_manager_api.Middle.Docker;
@@ -72,7 +73,8 @@ public class Startup(IConfiguration configuration)
                     ctx.ProblemDetails.Status ?? StatusCodes.Status500InternalServerError;
             };
         });
-        services.AddDbContext<VmDatabaseContext>(opt => opt.UseNpgsql(configuration.GetConnectionString("postgres")));
+        services.AddDbContext<VmDatabaseContext>(opt => opt.UseNpgsql(configuration.GetConnectionString("postgres"),
+            npgOpts => { npgOpts.EnableRetryOnFailure(3, TimeSpan.FromMilliseconds(100), null); }));
 
         //service services
         services.AddUnitsOfWork();
@@ -101,7 +103,11 @@ public class Startup(IConfiguration configuration)
         services.AddCheckCacheMiddleware();
         services.AddApiCheckMiddleware();
 
-        services.AddControllers(opts => { opts.Filters.Add<RequireApiKeyAttribute>(); })
+        services.AddControllers(opts =>
+            {
+                opts.Filters.Add<RequireApiKeyAttribute>();
+                opts.Filters.Add<ExceptionCatcherFilter>();
+            })
             .AddJsonOptions(ConfigureJsonOptions);
 
         services.AddSwaggerGen(opts =>

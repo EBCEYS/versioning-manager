@@ -48,31 +48,23 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
         if (username == null) return WrongUserNameProblem();
 
         using var scope = logger.BeginScope("User {username} try create project.", username);
-        try
+        var result = await units.CreateProjectAsync(username, model.Name, model.AvailableSources,
+            HttpContext.RequestAborted);
+        switch (result)
         {
-            var result = await units.CreateProjectAsync(username, model.Name, model.AvailableSources,
-                HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("Project {name} was successfully created.", model.Name);
-                    return Ok();
-                case OperationResult.NotFound:
-                    logger.LogWarning("User {username} not found.", username);
-                    return NotFoundProblem("User");
-                case OperationResult.Conflict:
-                    logger.LogWarning("Project {name} already exists!", model.Name);
-                    return Problem($"Project with name {model.Name} already exists.", GetType().Name,
-                        StatusCodes.Status409Conflict);
-                case OperationResult.Failure:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on creating project!");
-            return InternalError();
+            case OperationResult.Success:
+                logger.LogInformation("Project {name} was successfully created.", model.Name);
+                return Ok();
+            case OperationResult.NotFound:
+                logger.LogWarning("User {username} not found.", username);
+                return NotFoundProblem("User");
+            case OperationResult.Conflict:
+                logger.LogWarning("Project {name} already exists!", model.Name);
+                return Problem($"Project with name {model.Name} already exists.", GetType().Name,
+                    StatusCodes.Status409Conflict);
+            case OperationResult.Failure:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -98,33 +90,25 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
         if (username == null) return WrongUserNameProblem();
 
         using var scope = logger.BeginScope("User {username} try create project entry.", username);
-        try
+        var result = await units.CreateProjectEntryAsync(username, model.ProjectName, model.Version,
+            model.DefaultActuality, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result = await units.CreateProjectEntryAsync(username, model.ProjectName, model.Version,
-                model.DefaultActuality, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("Project {name} entry {version} created successfully.", model.ProjectName,
-                        model.Version);
-                    return Ok();
-                case OperationResult.NotFound:
-                    logger.LogWarning("Project {name} or user {username} not found.", model.ProjectName, username);
-                    return NotFoundProblem("Project");
-                case OperationResult.Conflict:
-                    logger.LogWarning("Project {name} with version {version} already exists.", model.ProjectName,
-                        model.Version);
-                    return Problem("Project with name {name} already exists.", GetType().Name,
-                        StatusCodes.Status409Conflict);
-                case OperationResult.Failure:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on creating project entry!");
-            return InternalError();
+            case OperationResult.Success:
+                logger.LogInformation("Project {name} entry {version} created successfully.", model.ProjectName,
+                    model.Version);
+                return Ok();
+            case OperationResult.NotFound:
+                logger.LogWarning("Project {name} or user {username} not found.", model.ProjectName, username);
+                return NotFoundProblem("Project");
+            case OperationResult.Conflict:
+                logger.LogWarning("Project {name} with version {version} already exists.", model.ProjectName,
+                    model.Version);
+                return Problem("Project with name {name} already exists.", GetType().Name,
+                    StatusCodes.Status409Conflict);
+            case OperationResult.Failure:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -139,15 +123,7 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllProjectsAsync()
     {
-        try
-        {
-            return Ok((await units.GetAllProjectsAsync(HttpContext.RequestAborted)).Select(ProjectInfoResponse.Create));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting all projects!");
-            return InternalError();
-        }
+        return Ok((await units.GetAllProjectsAsync(HttpContext.RequestAborted)).Select(ProjectInfoResponse.Create));
     }
 
     /// <summary>
@@ -168,23 +144,15 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
         string name,
         [Required] [FromQuery] ProjectEntrySearchTypes searchType)
     {
-        try
-        {
-            var result = await units.GetAllProjectEntriesAsync(name,
-                searchType == ProjectEntrySearchTypes.Actual, HttpContext.RequestAborted);
-            if (result is { Result: OperationResult.Success, Object: not null })
-                return Ok(result.Object.Select(p => ProjectEntryInfoResponse.Create(name, p)));
+        var result = await units.GetAllProjectEntriesAsync(name,
+            searchType == ProjectEntrySearchTypes.Actual, HttpContext.RequestAborted);
+        if (result is { Result: OperationResult.Success, Object: not null })
+            return Ok(result.Object.Select(p => ProjectEntryInfoResponse.Create(name, p)));
 
-            if (result.Result == OperationResult.NotFound) return NotFoundProblem("Project");
+        if (result.Result == OperationResult.NotFound) return NotFoundProblem("Project");
 
-            logger.LogError("UNSUPPORTED RESULT TYPE {result}", result.Result);
-            throw new ArgumentOutOfRangeException(nameof(result.Result));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting project entries!");
-            return InternalError();
-        }
+        logger.LogError("UNSUPPORTED RESULT TYPE {result}", result.Result);
+        throw new ArgumentOutOfRangeException(nameof(result.Result));
     }
 
     /// <summary>
@@ -215,28 +183,20 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
         using var scope =
             logger.BeginScope("User {username} try change project entry actuality to {newStatus}.", username,
                 newStatus);
-        try
+        var result =
+            await units.ChangeProjectEntryActualityAsync(id, newStatus, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result =
-                await units.ChangeProjectEntryActualityAsync(id, newStatus, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("Successfully change actuality.");
-                    return Ok();
-                case OperationResult.NotFound:
-                    logger.LogInformation("Not found project entry with id {id}", id);
-                    return NotFoundProblem("Project entry");
-                case OperationResult.Failure:
-                case OperationResult.Conflict:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on changing project entry actuality!");
-            return InternalError();
+            case OperationResult.Success:
+                logger.LogInformation("Successfully change actuality.");
+                return Ok();
+            case OperationResult.NotFound:
+                logger.LogInformation("Not found project entry with id {id}", id);
+                return NotFoundProblem("Project entry");
+            case OperationResult.Failure:
+            case OperationResult.Conflict:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -252,16 +212,8 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetProjectImagesAsync([Required] [FromRoute] int id)
     {
-        try
-        {
-            var result = await units.GetImageInfosAsync(id, HttpContext.RequestAborted);
-            return Ok(result.Select(ImageInfoResponse.Create));
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on getting project images!");
-            return InternalError();
-        }
+        var result = await units.GetImageInfosAsync(id, HttpContext.RequestAborted);
+        return Ok(result.Select(ImageInfoResponse.Create));
     }
 
     /// <summary>
@@ -291,31 +243,23 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
         if (username == null) return WrongUserNameProblem();
 
         using var scope = logger.BeginScope("User {username} try copy images to project {id}.", username, id);
-        try
+        var imagesArray = images as int[] ?? images.ToArray();
+        var result =
+            await units.CopyImagesToNewProjectEntry(imagesArray.ToArray(), id, HttpContext.RequestAborted);
+        switch (result)
         {
-            var imagesArray = images as int[] ?? images.ToArray();
-            var result =
-                await units.CopyImagesToNewProjectEntry(imagesArray.ToArray(), id, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("Successfully copied images.");
-                    return Ok();
-                case OperationResult.NotFound:
-                    logger.LogInformation("Not found project entry with id {id}", id);
-                    return NotFoundProblem("Project entry");
-                case OperationResult.Failure:
-                    logger.LogInformation("Incorrect images {images}", string.Join(", ", imagesArray));
-                    return Problem("Incorrect images", GetType().Name, StatusCodes.Status400BadRequest);
-                case OperationResult.Conflict:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Error on copy images to project entry!");
-            return InternalError();
+            case OperationResult.Success:
+                logger.LogInformation("Successfully copied images.");
+                return Ok();
+            case OperationResult.NotFound:
+                logger.LogInformation("Not found project entry with id {id}", id);
+                return NotFoundProblem("Project entry");
+            case OperationResult.Failure:
+                logger.LogInformation("Incorrect images {images}", string.Join(", ", imagesArray));
+                return Problem("Incorrect images", GetType().Name, StatusCodes.Status400BadRequest);
+            case OperationResult.Conflict:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
     }
 
@@ -342,34 +286,20 @@ public class ProjectAdministrationController(ILogger<ProjectAdministrationContro
 
         using var scope =
             logger.BeginScope("User {username} try change image activity to project {id}.", username, id);
-        try
+        var result = await units.ChangeImageActivityAsync(id, newState, HttpContext.RequestAborted);
+        switch (result)
         {
-            var result = await units.ChangeImageActivityAsync(id, newState, HttpContext.RequestAborted);
-            switch (result)
-            {
-                case OperationResult.Success:
-                    logger.LogInformation("Successfully changed image activity.");
-                    return Ok();
-                case OperationResult.NotFound:
-                    logger.LogWarning("Image {id} not found!", id);
-                    return NotFoundProblem("Image");
-                case OperationResult.Failure:
-                case OperationResult.Conflict:
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(result));
-            }
+            case OperationResult.Success:
+                logger.LogInformation("Successfully changed image activity.");
+                return Ok();
+            case OperationResult.NotFound:
+                logger.LogWarning("Image {id} not found!", id);
+                return NotFoundProblem("Image");
+            case OperationResult.Failure:
+            case OperationResult.Conflict:
+            default:
+                throw new ArgumentOutOfRangeException(nameof(result));
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on changing project image activity!");
-            return InternalError();
-        }
-    }
-
-    private ObjectResult InternalError()
-    {
-        return Problem("Internal database error!", GetType().Name, StatusCodes.Status500InternalServerError,
-            "Internal database error!");
     }
 
     private ObjectResult WrongUserNameProblem()

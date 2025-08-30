@@ -73,39 +73,31 @@ public class DeviceAdministrationController(
         using var scope = logger.BeginScope("User {username} try create device with source {source}", username,
             model.Source);
 
-        try
+        var deviceId = Guid.CreateVersion7();
+        var apiKey = keyGen.Generate(deviceId, model.Source, model.ExpiresUtc);
+        var result = await units.CreateDeviceAsync(deviceId, username, apiKey, model, hasher,
+            HttpContext.RequestAborted);
+        if (result is { Result: OperationResult.Success, Object: not null })
         {
-            var deviceId = Guid.CreateVersion7();
-            var apiKey = keyGen.Generate(deviceId, model.Source, model.ExpiresUtc);
-            var result = await units.CreateDeviceAsync(deviceId, username, apiKey, model, hasher,
-                HttpContext.RequestAborted);
-            if (result is { Result: OperationResult.Success, Object: not null })
+            logger.LogInformation("New device created successfully!");
+            DeviceTokenInfoResponse response = new()
             {
-                logger.LogInformation("New device created successfully!");
-                DeviceTokenInfoResponse response = new()
-                {
-                    DeviceId = deviceId,
-                    ApiKey = apiKey,
-                    Source = model.Source,
-                    Expires = model.ExpiresUtc
-                };
-                return Ok(response);
-            }
-
-            if (result.Result == OperationResult.NotFound)
-            {
-                logger.LogWarning("User not found on device creation!");
-                return NotFoundProblem("User");
-            }
-
-            logger.LogError("Unsupported response condition! {result}", result.Result);
-            return InternalError();
+                DeviceId = deviceId,
+                ApiKey = apiKey,
+                Source = model.Source,
+                Expires = model.ExpiresUtc
+            };
+            return Ok(response);
         }
-        catch (Exception ex)
+
+        if (result.Result == OperationResult.NotFound)
         {
-            logger.LogError(ex, "Error on creating device!");
-            return InternalError();
+            logger.LogWarning("User not found on device creation!");
+            return NotFoundProblem("User");
         }
+
+        logger.LogError("Unsupported response condition! {result}", result.Result);
+        return InternalError();
     }
 
     /// <summary>
@@ -129,38 +121,30 @@ public class DeviceAdministrationController(
 
         using var scope =
             logger.BeginScope("User {username} try update device {id}", username, model.DeviceKey);
-        try
+        var newKey = keyGen.Generate(model.DeviceKey, model.Source, model.ExpiresUtc);
+        var result =
+            await units.UpdateDeviceAsync(model, hasher, newKey, HttpContext.RequestAborted);
+        if (result.Result == OperationResult.Success)
         {
-            var newKey = keyGen.Generate(model.DeviceKey, model.Source, model.ExpiresUtc);
-            var result =
-                await units.UpdateDeviceAsync(model, hasher, newKey, HttpContext.RequestAborted);
-            if (result.Result == OperationResult.Success)
+            DeviceTokenInfoResponse response = new()
             {
-                DeviceTokenInfoResponse response = new()
-                {
-                    ApiKey = newKey,
-                    DeviceId = model.DeviceKey,
-                    Expires = model.ExpiresUtc,
-                    Source = model.Source
-                };
-                logger.LogInformation("Successfully refresh token for device {id}", model.DeviceKey);
-                return Ok(response);
-            }
-
-            if (result.Result == OperationResult.NotFound)
-            {
-                logger.LogWarning("Device {id} not found!", model.DeviceKey);
-                return NotFoundProblem("Device");
-            }
-
-            logger.LogError("Unsupported response condition! {result}", result.Result);
-            return InternalError();
+                ApiKey = newKey,
+                DeviceId = model.DeviceKey,
+                Expires = model.ExpiresUtc,
+                Source = model.Source
+            };
+            logger.LogInformation("Successfully refresh token for device {id}", model.DeviceKey);
+            return Ok(response);
         }
-        catch (Exception ex)
+
+        if (result.Result == OperationResult.NotFound)
         {
-            logger.LogError(ex, "Error on updating device!");
-            return InternalError();
+            logger.LogWarning("Device {id} not found!", model.DeviceKey);
+            return NotFoundProblem("Device");
         }
+
+        logger.LogError("Unsupported response condition! {result}", result.Result);
+        return InternalError();
     }
 
     /// <summary>
@@ -193,31 +177,23 @@ public class DeviceAdministrationController(
 
         using var scope =
             logger.BeginScope("User {username} try get devices {searchType}", username, searchType);
-        try
-        {
-            DbDevice? oneDevice = null;
-            if (searchType == DeviceSearchType.One && id != null) oneDevice = await units.GetDeviceInfo(id.Value);
+        DbDevice? oneDevice = null;
+        if (searchType == DeviceSearchType.One && id != null) oneDevice = await units.GetDeviceInfo(id.Value);
 
-            var devices = searchType switch
-            {
-                DeviceSearchType.All => await units.GetAllDevicesAsync(HttpContext.RequestAborted),
-                DeviceSearchType.Active => await units.GetActiveDevicesAsync(HttpContext.RequestAborted),
-                DeviceSearchType.One => oneDevice != null ? [oneDevice] : [],
-                _ => []
-            };
-            var response = devices.Select(d => new DeviceInfoResponse
-            {
-                Id = d.Id,
-                ExpiresUtc = d.ExpireUTC,
-                IsActive = d.IsActive
-            });
-            return Ok(response);
-        }
-        catch (Exception ex)
+        var devices = searchType switch
         {
-            logger.LogError(ex, "Error on getting devices!`");
-            return InternalError();
-        }
+            DeviceSearchType.All => await units.GetAllDevicesAsync(HttpContext.RequestAborted),
+            DeviceSearchType.Active => await units.GetActiveDevicesAsync(HttpContext.RequestAborted),
+            DeviceSearchType.One => oneDevice != null ? [oneDevice] : [],
+            _ => []
+        };
+        var response = devices.Select(d => new DeviceInfoResponse
+        {
+            Id = d.Id,
+            ExpiresUtc = d.ExpireUTC,
+            IsActive = d.IsActive
+        });
+        return Ok(response);
     }
 
     /// <summary>
@@ -244,20 +220,12 @@ public class DeviceAdministrationController(
         if (username == null) return WrongUserNameProblem();
 
         using var scope = logger.BeginScope("User {username} try delete device {id}", username, id);
-        try
+        var result = await units.DeleteDeviceAsync(id, HttpContext.RequestAborted);
+        return result.Result switch
         {
-            var result = await units.DeleteDeviceAsync(id, HttpContext.RequestAborted);
-            return result.Result switch
-            {
-                OperationResult.Success => Ok(),
-                OperationResult.NotFound => NotFoundProblem("Device"),
-                _ => throw new ArgumentOutOfRangeException(nameof(result.Result))
-            };
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error on deleting device!");
-            return InternalError();
-        }
+            OperationResult.Success => Ok(),
+            OperationResult.NotFound => NotFoundProblem("Device"),
+            _ => throw new ArgumentOutOfRangeException(nameof(result.Result))
+        };
     }
 }

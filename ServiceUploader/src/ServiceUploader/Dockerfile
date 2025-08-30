@@ -1,16 +1,19 @@
 ﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY . .
-RUN dotnet restore "ServiceUploader.csproj"
-COPY . .
-WORKDIR "/src"
-RUN dotnet build "ServiceUploader.csproj" -c $BUILD_CONFIGURATION -o /app/build
+COPY ../../../ServiceUploader/ ./
+COPY ../../../versioning-manager-api/ ./
+RUN dotnet restore "ServiceUploader/src/ServiceUploader/ServiceUploader.csproj"
+
+COPY ../../../ServiceUploader/ ./
+COPY ../../../versioning-manager-api/ ./
+WORKDIR /src
+RUN dotnet build "ServiceUploader/src/ServiceUploader/ServiceUploader.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 
-RUN dotnet publish \
+RUN dotnet publish "ServiceUploader/src/ServiceUploader/ServiceUploader.csproj" \
     -c ${BUILD_CONFIGURATION} \
     --self-contained true \
     -r linux-x64 \

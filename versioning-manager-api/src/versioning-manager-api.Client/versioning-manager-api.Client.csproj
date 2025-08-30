@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>versioning_manager_api.Client</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Flurl.Http" Version="4.0.2"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\versioning-manager-api.Models\versioning-manager-api.Models.csproj"/>
+        <ProjectReference Include="..\versioning-manager-api.Routes\versioning-manager-api.Routes.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Reference Include="Microsoft.AspNetCore.Http.Abstractions">
+            <HintPath>..\..\..\..\..\..\..\usr\lib\dotnet\shared\Microsoft.AspNetCore.App\9.0.8\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+</Project>

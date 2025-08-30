@@ -2,6 +2,8 @@ using Microsoft.Extensions.Caching.Memory;
 using versioning_manager_api.Extensions;
 using versioning_manager_api.Models;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace versioning_manager_api.Middlewares;
 
 public class CheckCacheMiddleware : IMiddleware
@@ -10,14 +12,16 @@ public class CheckCacheMiddleware : IMiddleware
     {
         if (ctx.User.Identity?.IsAuthenticated == true)
         {
-            string? username = ctx.User.GetUserName();
-            string? sessionId = ctx.User.GetSessionId();
-            if (username == null || sessionId == null || !ctx.RequestServices.GetRequiredService<IMemoryCache>().TryGetValue<TokenResponseModel>(sessionId, out _))
+            var username = ctx.User.GetUserName();
+            var sessionId = ctx.User.GetSessionId();
+            if (username == null || sessionId == null || !ctx.RequestServices.GetRequiredService<IMemoryCache>()
+                    .TryGetValue<TokenResponseModel>(sessionId, out _))
             {
                 ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
         }
+
         await next.Invoke(ctx);
     }
 }

@@ -6,15 +6,15 @@ using versioning_manager_api.Middle.UnitOfWorks.Users;
 namespace versioning_manager_api.Middle.UnitOfWorks;
 
 /// <summary>
-/// The units service collection extensions.
+///     The units service collection extensions.
 /// </summary>
 public static class UnitsIServiceCollectionExtensions
 {
     /// <summary>
-    /// Adds unit of works to <paramref name="sc"/> as scoped.
+    ///     Adds unit of works to <paramref name="sc" /> as scoped.
     /// </summary>
     /// <param name="sc">The service collection.</param>
-    /// <returns>An instance of <paramref name="sc"/>.</returns>
+    /// <returns>An instance of <paramref name="sc" />.</returns>
     public static IServiceCollection AddUnitsOfWork(this IServiceCollection sc)
     {
         return sc

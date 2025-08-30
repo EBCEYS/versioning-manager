@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>versioning_manager_api.Models</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\versioning-manager-api.DbContext\versioning-manager-api.DbContext.csproj"/>
+        <ProjectReference Include="..\versioning-manager-api.Routes\versioning-manager-api.Routes.csproj"/>
+    </ItemGroup>
+
+</Project>

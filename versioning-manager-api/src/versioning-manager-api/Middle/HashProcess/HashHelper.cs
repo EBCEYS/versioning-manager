@@ -2,45 +2,50 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace versioning_manager_api.Middle.HashProcess;
 
 public interface IHashHelper
 {
     /// <summary>
-    /// Hashes the password.
+    ///     The default salt.
+    /// </summary>
+    string DefaultSalt { get; init; }
+
+    /// <summary>
+    ///     Hashes the password.
     /// </summary>
     /// <param name="pass">The password</param>
-    /// <param name="salt">The <see cref="Encoding.ASCII"/> based salt.</param>
+    /// <param name="salt">The <see cref="Encoding.ASCII" /> based salt.</param>
     /// <param name="iterations">[optional] The iterations count.</param>
     /// <returns></returns>
     string Hash(string pass, string salt, int iterations = 100000);
 
     /// <summary>
-    /// Generates the salt for hash.
+    ///     Generates the salt for hash.
     /// </summary>
     /// <returns>ASCII representation of salt.</returns>
     string GenerateSalt();
-    /// <summary>
-    /// The default salt.
-    /// </summary>
-    string DefaultSalt { get; init; }
 }
 
 public class HashHelper : IHashHelper
 {
     public string Hash(string pass, string salt, int iterations = 100000)
     {
-        return Convert.ToBase64String(KeyDerivation.Pbkdf2(
-            password: pass,
-            salt: Encoding.ASCII.GetBytes(salt),
-            prf: KeyDerivationPrf.HMACSHA256,
-            iterationCount: iterations,
-            numBytesRequested: 256 / 8));
+        return Convert.ToHexStringLower(KeyDerivation.Pbkdf2(
+            pass,
+            Encoding.UTF8.GetBytes(salt),
+            KeyDerivationPrf.HMACSHA256,
+            iterations,
+            256 / 8));
     }
 
     public string GenerateSalt()
     {
-        return Encoding.ASCII.GetString(RandomNumberGenerator.GetBytes(128 / 8));
+        return Encoding.UTF8.GetString(RandomNumberGenerator.GetBytes(128 / 8)
+            .Select(b => b == 0 ? (byte)1 : b)
+            .ToArray());
     }
 
     public string DefaultSalt { get; init; } = "SOME_SOURCE_SALT";

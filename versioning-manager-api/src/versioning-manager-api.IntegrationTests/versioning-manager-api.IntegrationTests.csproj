@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <RootNamespace>versioning_manager_api.IntegrationTests</RootNamespace>
+        <LangVersion>latest</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="6.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
+        <PackageReference Include="FluentAssertions" Version="8.6.0"/>
+        <PackageReference Include="NUnit" Version="4.4.0"/>
+        <PackageReference Include="NUnit.Analyzers" Version="4.10.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NUnit3TestAdapter" Version="5.1.0"/>
+        <PackageReference Include="Testcontainers" Version="4.7.0"/>
+        <PackageReference Include="Testcontainers.PostgreSql" Version="4.7.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="NUnit.Framework"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\versioning-manager-api.Client\versioning-manager-api.Client.csproj"/>
+        <ProjectReference Include="..\versioning-manager-api\versioning-manager-api.csproj"/>
+    </ItemGroup>
+
+</Project>

@@ -30,11 +30,14 @@
 
 * *-t/--token* - токен доступа устройства к серверу версионирования. Переменная окружения - *SERVICEUPLOADER_TOKEN*.
 * *--uri* - адрес сервера версионирования. Переменная окружения - *SERVICEUPLOADER_VM_URI*.
-* *--image* - имя тега образа сервиса, по которому нужно загрузить инф-цию. Переменная окружения - *SERVICEUPLOADER_IMAGE_TAG*.
-* *--project-name* - имя проекта, в который нужно добавить новый образ. Переменная окружения - *SERVICEUPLOADER_PROJECT_NAME*.
+* *--image* - имя тега образа сервиса, по которому нужно загрузить инф-цию. Переменная окружения -
+  *SERVICEUPLOADER_IMAGE_TAG*.
+* *--project-name* - имя проекта, в который нужно добавить новый образ. Переменная окружения -
+  *SERVICEUPLOADER_PROJECT_NAME*.
 * *--service-name* - имя сервиса, который нужно загрузить. Переменная окружения - *SERVICEUPLOADER_SERVICE_NAME*.
 * *--service-version* - версия сервиса. Переменная окружения - *SERVICEUPLOADER_IMAGE_VERSION*.
-* *--compose-file* - опциональный ключ. Путь до *docker-compose* файла с инструкцией по запуску сервиса. Переменная окружения - *SERVICEUPLOADER_DOCKER_COMPOSE_FILE*.
+* *--compose-file* - опциональный ключ. Путь до *docker-compose* файла с инструкцией по запуску сервиса. Переменная
+  окружения - *SERVICEUPLOADER_DOCKER_COMPOSE_FILE*.
 
 ## *Save*
 

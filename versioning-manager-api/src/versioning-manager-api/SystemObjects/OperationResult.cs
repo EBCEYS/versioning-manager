@@ -1,3 +1,4 @@
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 namespace versioning_manager_api.SystemObjects;
 
 public class OperationResult<T>(OperationResult result, T? o)

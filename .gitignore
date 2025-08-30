@@ -27,6 +27,7 @@ bld/
 .vscode/
 
 *.crt
+*.DotSettings
 
 # .NET Core
 project.lock.json

@@ -11,13 +11,13 @@ public class ExceptionCatcherFilter(ILogger<ExceptionCatcherFilter> logger) : Ex
     public override void OnException(ExceptionContext context)
     {
         if (context.Exception is ApiKeyRequireException) return;
-        
+
         logger.LogError(context.Exception, "Error on request processing!");
         ProblemDetails details = new()
         {
             Status = StatusCodes.Status500InternalServerError,
             Detail = context.Exception.Message,
-            Instance = context.HttpContext.Request.Path,
+            Instance = FormatDetail(context.HttpContext.Request),
             Title = "Internal error! See logs!"
         };
         context.Result = new ObjectResult(details)
@@ -25,5 +25,10 @@ public class ExceptionCatcherFilter(ILogger<ExceptionCatcherFilter> logger) : Ex
             ContentTypes = ["application/problem+json"],
             StatusCode = details.Status
         };
+    }
+
+    private static string FormatDetail(HttpRequest request)
+    {
+        return $"{request.Method}: {request.Path}";
     }
 }

@@ -33,9 +33,9 @@ public class HashHelper : IHashHelper
 {
     public string Hash(string pass, string salt, int iterations = 100000)
     {
-        return Convert.ToBase64String(KeyDerivation.Pbkdf2(
+        return Convert.ToHexStringLower(KeyDerivation.Pbkdf2(
             pass,
-            Encoding.ASCII.GetBytes(salt),
+            Encoding.UTF8.GetBytes(salt),
             KeyDerivationPrf.HMACSHA256,
             iterations,
             256 / 8));
@@ -43,7 +43,9 @@ public class HashHelper : IHashHelper
 
     public string GenerateSalt()
     {
-        return Encoding.ASCII.GetString(RandomNumberGenerator.GetBytes(128 / 8));
+        return Encoding.UTF8.GetString(RandomNumberGenerator.GetBytes(128 / 8)
+            .Select(b => b == 0 ? (byte)1 : b)
+            .ToArray());
     }
 
     public string DefaultSalt { get; init; } = "SOME_SOURCE_SALT";

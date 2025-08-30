@@ -25,7 +25,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y dpkg-dev
 
       - name: Build app and deb package
-        run: ${{ env.SERV_UPLOADER_SRC_DIR }}/build-deb.sh
+        run: ${{ env.SERV_UPLOADER_SRC_DIR }}/build_deb.sh
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

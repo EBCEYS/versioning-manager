@@ -2,15 +2,15 @@
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY . .
-RUN dotnet restore "versioning-manager-api.csproj"
+RUN dotnet restore
 COPY . .
 WORKDIR "/src"
-RUN dotnet build "versioning-manager-api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "versioning-manager-api/versioning-manager-api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 
-RUN dotnet publish \
+RUN dotnet publish "versioning-manager-api/versioning-manager-api.csproj" \
     -c ${BUILD_CONFIGURATION} \
     --self-contained true \
     -r linux-x64 \

@@ -9,6 +9,7 @@ env:
   SERV_UPLOADER_DOCKER_IMAGE: ebcey/service-uploader
   CONTAINER_REGISTRY: docker.io
   VER_MANAGER_DIR: ./versioning-manager-api/src/versioning-manager-api
+  VER_MANAGER_SRC_DIR: ./versioning-manager-api/src
   SERV_UPLOADER_DIR: ./ServiceUploader/src/ServiceUploader
   SERV_UPLOADER_SRC_DIR: ./ServiceUploader/src
 
@@ -40,8 +41,8 @@ jobs:
       - name: Build and push Docker image (VersioningManager)
         uses: docker/build-push-action@v5
         with:
-          context: ${{ env.VER_MANAGER_DIR }}/
-          file: ${{ env.VER_MANAGER_DIR }}/Dockerfile
+          context: ${{ env.VER_MANAGER_SRC_DIR }}/
+          file: ${{ env.VER_MANAGER_SRC_DIR }}/Dockerfile
           push: true
           tags: |
             ${{ env.VER_MANAGER_DOCKER_IMAGE }}:latest

@@ -5,54 +5,42 @@ namespace versioning_manager_api.Models.Responses.Projects;
 /// <summary>
 ///     The image info api response.
 /// </summary>
-/// <param name="id">The image id.</param>
-/// <param name="service">The service name.</param>
-/// <param name="version">The image version.</param>
-/// <param name="tag">The image tag.</param>
-/// <param name="creator">The creator.</param>
-public class ImageInfoResponse(
-    int id,
-    string service,
-    string version,
-    string tag,
-    Guid creator,
-    bool isActive,
-    DateTimeOffset creationUtc)
+public class ImageInfoResponse
 {
     /// <summary>
     ///     The id.
     /// </summary>
-    public int Id { get; } = id;
+    public required int Id { get; init; }
 
     /// <summary>
     ///     The service name.
     /// </summary>
-    public string ServiceName { get; } = service;
+    public required string ServiceName { get; init; }
 
     /// <summary>
     ///     The version.
     /// </summary>
-    public string Version { get; } = version;
+    public required string Version { get; init; }
 
     /// <summary>
     ///     The tag.
     /// </summary>
-    public string Tag { get; } = tag;
+    public required string Tag { get; init; }
 
     /// <summary>
     ///     The creator.
     /// </summary>
-    public Guid Creator { get; } = creator;
+    public required Guid Creator { get; init; }
 
     /// <summary>
     ///     Is active.
     /// </summary>
-    public bool IsActive { get; } = isActive;
+    public required bool IsActive { get; init; }
 
     /// <summary>
     ///     Creation UTC.
     /// </summary>
-    public DateTimeOffset CreationUtc { get; } = creationUtc;
+    public required DateTimeOffset CreationUtc { get; init; }
 
     /// <summary>
     ///     Creates an instance of <see cref="ImageInfoResponse" /> from <see cref="DbImageInfo" />.
@@ -61,7 +49,15 @@ public class ImageInfoResponse(
     /// <returns></returns>
     public static ImageInfoResponse Create(DbImageInfo dbImageInfo)
     {
-        return new ImageInfoResponse(dbImageInfo.Id, dbImageInfo.ServiceName, dbImageInfo.Version, dbImageInfo.ImageTag,
-            dbImageInfo.Creator.Id, dbImageInfo.IsActive, dbImageInfo.CreationUTC);
+        return new ImageInfoResponse
+        {
+            Id = dbImageInfo.Id,
+            ServiceName = dbImageInfo.ServiceName,
+            Version = dbImageInfo.Version,
+            Tag = dbImageInfo.ImageTag,
+            Creator = dbImageInfo.CreatorId,
+            IsActive = dbImageInfo.IsActive,
+            CreationUtc = dbImageInfo.CreationUTC
+        };
     }
 }

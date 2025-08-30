@@ -192,7 +192,8 @@ public class ProjectsUnits(VmDatabaseContext db, IDockerController docker)
         var project = await db.ProjectEntries.FirstOrDefaultAsync(p => p.Id == projectEntryId, token);
         if (project == null) return OperationResult.NotFound;
 
-        var imagesToMigrate = await db.Images.Where(i => images.Contains(i.Id)).ToListAsync(token);
+        var imagesToMigrate = await db.Images.Where(i => images.Contains(i.Id))
+            .Include(dbImageInfo => dbImageInfo.Creator).ToListAsync(token);
         if (imagesToMigrate.Count != images.Length) return OperationResult.Failure;
 
         List<DbImageInfo> newImages = [];

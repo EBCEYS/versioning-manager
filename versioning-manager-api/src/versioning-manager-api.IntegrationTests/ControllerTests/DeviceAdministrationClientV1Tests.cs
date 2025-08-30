@@ -5,7 +5,7 @@ using versioning_manager_api.IntegrationTests.TestData;
 using versioning_manager_api.Models.Requests.Devices;
 using versioning_manager_api.Models.Requests.Users;
 
-namespace versioning_manager_api.IntegrationTests.DeviceAdministrationControllerTests;
+namespace versioning_manager_api.IntegrationTests.ControllerTests;
 
 public class DeviceAdministrationClientV1Tests : IntegrationTestBase
 {

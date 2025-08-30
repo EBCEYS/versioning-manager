@@ -9,7 +9,7 @@ using versioning_manager_api.Middle.CryptsProcess;
 using versioning_manager_api.Middle.HashProcess;
 using versioning_manager_api.SystemObjects.Options;
 
-namespace versioning_manager_api.IntegrationTests.Helpers;
+namespace versioning_manager_api.IntegrationTests.HelperTests;
 
 public class ApiKeyProcessorTests : IntegrationTestBase
 {

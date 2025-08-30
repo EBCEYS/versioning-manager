@@ -107,6 +107,31 @@ internal abstract class ClientBase(IFlurlClient client, TimeSpan defaultTimeout,
 
         return await ProcessResponse<TResponse, TError>(response, token);
     }
+    /// <summary>
+    ///     Posts the POST request with json body.
+    /// </summary>
+    /// <param name="urlAction">The action to enhance base url.</param>
+    /// <param name="headers">The headers.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <param name="requestObject">The object to place it in request body.</param>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TError"></typeparam>
+    /// <exception cref="VersioningManagerApiException{TError}">The exception with <typeparamref name="TError" /> object.</exception>
+    /// <exception cref="VersioningManagerApiException{TError}">
+    ///     The exception with <see cref="String" /> reprezentation of
+    ///     response content or service message.
+    /// </exception>
+    protected async Task PostAsync<TRequest, TError>(Action<Url> urlAction, TRequest requestObject,
+        Dictionary<string, object>? headers = null, CancellationToken token = default) where TError : class
+    {
+        var url = FormatUri(urlAction, BaseUrl);
+        var request = PrepareRequest(headers, url);
+
+        var response =
+            await request.AllowAnyHttpStatus().PostJsonAsync(requestObject, cancellationToken: token);
+
+        await ProcessResponse<TError>(response, token);
+    }
 
     /// <summary>
     ///     Posts the POST request with json body.

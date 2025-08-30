@@ -7,7 +7,7 @@ using versioning_manager_api.IntegrationTests.TestData;
 using versioning_manager_api.Models;
 using versioning_manager_api.Models.Requests.Users;
 
-namespace versioning_manager_api.IntegrationTests.UsersControllerTests;
+namespace versioning_manager_api.IntegrationTests.ControllerTests;
 
 public class UsersControllerV1Tests : IntegrationTestBase
 {

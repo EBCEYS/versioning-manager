@@ -42,7 +42,7 @@ internal class ProjectClientV1 : ClientBase, IProjectClientV1
     public async Task PostImageInfoAsync(UploadImageInfoModel imageInfo, string apiKey,
         CancellationToken token = default)
     {
-        await PostJsonAsync<UploadImageInfoModel, object, ProblemDetails>(
+        await PostAsync<UploadImageInfoModel, ProblemDetails>(
             url => url.AppendPathSegment(PostImageInfoRoute), imageInfo,
             GetHeaders(apiKey),
             token);

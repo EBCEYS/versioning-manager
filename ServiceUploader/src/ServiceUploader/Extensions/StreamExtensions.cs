@@ -2,26 +2,18 @@ using System.Diagnostics;
 
 namespace ServiceUploader.Extensions;
 
-public static class HttpClientExtensions
+public static class StreamExtensions
 {
-    public static async Task DownloadFileAsync(this HttpClient client, Uri url, string destination,
+    public static async Task DownloadFileAsync(this Stream contentStream, string destination,
         Action<long, double> downloadProgress, Action<long, double> finishProcess, TimeSpan period,
         CancellationToken cancellationToken = default)
     {
-        using HttpResponseMessage response = await client.GetAsync(
-            url,
-            HttpCompletionOption.ResponseHeadersRead,
-            cancellationToken);
-
-        response.EnsureSuccessStatusCode();
-
-        await using Stream contentStream = await response.Content.ReadAsStreamAsync(cancellationToken);
         await using FileStream fileStream = new(
             destination,
             FileMode.Create,
             FileAccess.Write);
 
-        byte[] buffer = new byte[8192];
+        var buffer = new byte[8192];
         Stopwatch stopwatch = new();
         long totalRead = 0;
         long lastBytes = 0;
@@ -47,7 +39,7 @@ public static class HttpClientExtensions
         {
             if (totalRead <= 0) return;
 
-            double currentSpeed = (totalRead - lastBytes) / (period.TotalSeconds * 1024.0 * 1024.0);
+            var currentSpeed = (totalRead - lastBytes) / (period.TotalSeconds * 1024.0 * 1024.0);
             lastBytes = totalRead;
 
 

@@ -40,6 +40,13 @@ internal class ProjectClientV1 : ClientBase, IProjectClientV1
                 .AppendQueryParam("id", imageId), GetHeaders(apiKey), token);
     }
 
+    public async Task<Stream> DownloadImageAsync(string tag, string apiKey, CancellationToken token = default)
+    {
+        return await GetStreamAsync<ProblemDetails>(
+            url => url.AppendPathSegment(DownloadServiceImageRoute)
+                .AppendQueryParam("tag", tag), GetHeaders(apiKey), token);
+    }
+
     public async Task PostImageInfoAsync(UploadImageInfoModel imageInfo, string apiKey,
         CancellationToken token = default)
     {

@@ -66,6 +66,24 @@ public class ProjectController : ControllerBase
     }
 
     /// <summary>
+    ///     Gets the last image file by <paramref name="tag"/>.
+    /// </summary>
+    /// <param name="tag">The image tag.</param>
+    /// <response code="200">The image tag archive file stream.</response>
+    /// <response code="404">Image not found in database or registry.</response>
+    /// <response code="500">Internal error.</response>
+    [HttpGet(DownloadServiceImageRoute)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult> DownloadServiceImageAsync([Required] [FromQuery] string tag)
+    {
+        var imageStream = await _unit.GetImageFileAsync(tag, HttpContext.RequestAborted);
+        if (imageStream == null) return NotFoundProblem("Image");
+
+        return File(imageStream, "application/x-tar");
+    }
+
+    /// <summary>
     ///     Uploads the image to docker registry.
     /// </summary>
     /// <param name="file">The image file.</param>

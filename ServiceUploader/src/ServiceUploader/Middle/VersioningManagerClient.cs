@@ -31,6 +31,14 @@ internal class VersioningManagerClient
         await stream.DownloadFileAsync(destinationPath, progressCallback, finishCallback,
             TimeSpan.FromSeconds(1));
     }
+    
+    public async Task DownloadImageAsync(string tag, string destinationPath, Action<long, double> progressCallback,
+        Action<long, double> finishCallback)
+    {
+        var stream = await _client.DownloadImageAsync(tag, _token);
+        await stream.DownloadFileAsync(destinationPath, progressCallback, finishCallback,
+            TimeSpan.FromSeconds(1));
+    }
 
     public async Task<DeviceProjectInfoResponse> GetProjectInfoAsync(string projectName)
     {

@@ -33,6 +33,17 @@ public interface IProjectClientV1
     Task<Stream> DownloadImageAsync(int imageId, string apiKey, CancellationToken token = default);
 
     /// <summary>
+    ///     Gets the last image file by <paramref name="tag"/>.
+    /// </summary>
+    /// <param name="tag">The service name.</param>
+    /// <param name="apiKey">The api key.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns>The new instance of <see cref="Stream" /> with image file content.</returns>
+    /// <exception cref="VersioningManagerApiException{TError}">The server response error.</exception>
+    /// <exception cref="VersioningManagerApiException{String}">The internal service error.</exception>
+    Task<Stream> DownloadImageAsync(string tag, string apiKey, CancellationToken token = default);
+
+    /// <summary>
     ///     Gets the project info.
     /// </summary>
     /// <param name="imageInfo">The service image info.</param>

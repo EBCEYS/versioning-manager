@@ -33,6 +33,23 @@ public class ImageUnits(VmDatabaseContext db, IDockerController docker, DockerCo
     }
 
     /// <summary>
+    ///     Gets the image file.
+    /// </summary>
+    /// <param name="imageTag">The service name.</param>
+    /// <param name="token">The cancellation token.</param>
+    /// <returns><see cref="Stream" /> with image tar archive if exists; otherwise <c>null</c>.</returns>
+    public async Task<Stream?> GetImageFileAsync(string imageTag, CancellationToken token = default)
+    {
+        var image = await db.Images.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.ImageTag == imageTag && x.IsActive, token);
+        if (image == null) return null;
+
+        await docker.PullImageFromGitlabAsync(image.ImageTag, token);
+
+        return await docker.GetImageFileAsync(image.ImageTag, token);
+    }
+
+    /// <summary>
     ///     Uploads the image info to database.
     /// </summary>
     /// <param name="model">The model.</param>

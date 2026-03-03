@@ -106,6 +106,7 @@ public static class ControllerRoutes
         public const string DownloadImageRoute = "image/file";
         public const string UploadImageRoute = "image/file";
         public const string PostImageInfoRoute = "image";
+        public const string DownloadServiceImageRoute = "service/image/file";
 
         /// <summary>
         ///     Replace "{name}" to project name.

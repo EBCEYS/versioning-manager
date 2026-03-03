@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using versioning_manager_api.Client.Exceptions;
 using versioning_manager_api.Client.Interfaces;
+using versioning_manager_api.IntegrationTests.Mocks;
 using versioning_manager_api.IntegrationTests.TestData;
 using versioning_manager_api.Models;
 using versioning_manager_api.Models.Requests.Devices;
@@ -36,6 +37,7 @@ public class ProjectControllerTests : IntegrationTestBase
         await DbContext.ProjectEntries.AsQueryable().ExecuteDeleteAsync();
         await DbContext.Images.AsQueryable().ExecuteDeleteAsync();
         await DbContext.Devices.AsQueryable().ExecuteDeleteAsync();
+        DockerControllerMock.Images.Clear();
 
         _validToken = (await Client.UsersClient.LoginAsync(new UserLoginModel
         {
@@ -144,7 +146,7 @@ public class ProjectControllerTests : IntegrationTestBase
             Version = "latest"
         };
         await _client.PostImageInfoAsync(creationRequest, _deviceInfo.ApiKey);
-        
+
         await _projectClient.CreateProjectEntryAsync(new CreateProjectEntryModel
         {
             ProjectName = ProjectName,
@@ -161,9 +163,9 @@ public class ProjectControllerTests : IntegrationTestBase
         var images = await _projectClient.GetImagesAsync(oldEntry.Id, _validToken);
 
         await _projectClient.CopyImagesToProjectAsync(newEntry.Id, images.Select(i => i.Id).ToArray(), _validToken);
-        
+
         var migratedImages = await _projectClient.GetImagesAsync(newEntry.Id, _validToken);
-        
+
         migratedImages.Should().NotBeEmpty();
     }
 
@@ -179,13 +181,46 @@ public class ProjectControllerTests : IntegrationTestBase
             Version = "latest"
         };
         await _client.PostImageInfoAsync(creationRequest, _deviceInfo.ApiKey);
-        
+
         var entry =
-            (await _projectClient.GetProjectEntriesAsync(ProjectName, ProjectEntrySearchTypes.Actual, _validToken)).First();
+            (await _projectClient.GetProjectEntriesAsync(ProjectName, ProjectEntrySearchTypes.Actual, _validToken))
+            .First();
         var images = await _projectClient.GetImagesAsync(entry.Id, _validToken);
         await _projectClient.ChangeImageActivityAsync(images.First().Id, false, _validToken);
-        
+
         var newImages = (await _projectClient.GetImagesAsync(entry.Id, _validToken)).Where(i => i.IsActive).ToArray();
         newImages.Should().BeEmpty();
+    }
+
+    [Test]
+    public async Task When_DownloadImage_With_ServiceName_Result_Success()
+    {
+        var creationRequest1 = new UploadImageInfoModel
+        {
+            DockerCompose = "services:",
+            ImageTag = "some/image:1.0",
+            ProjectName = ProjectName,
+            ServiceName = "some-service",
+            Version = "1.0"
+        };
+        await _client.PostImageInfoAsync(creationRequest1, _deviceInfo.ApiKey);
+        await DockerControllerMock.WriteImageAsync(creationRequest1.ImageTag, creationRequest1.Version);
+        var creationRequest2 = new UploadImageInfoModel
+        {
+            DockerCompose = "services:",
+            ImageTag = "some/image:1.1",
+            ProjectName = ProjectName,
+            ServiceName = "some-service",
+            Version = "1.1"
+        };
+        await DockerControllerMock.WriteImageAsync(creationRequest2.ImageTag, creationRequest2.Version);
+        await _client.PostImageInfoAsync(creationRequest2, _deviceInfo.ApiKey);
+
+        var act = () => _client.DownloadImageAsync(creationRequest1.ImageTag, _deviceInfo.ApiKey);
+        var image = await _client.DownloadImageAsync(creationRequest2.ImageTag, _deviceInfo.ApiKey);
+
+        (await act.Should().ThrowAsync<VersioningManagerApiException<ProblemDetails>>())
+            .And.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+        image.Should().NotBeNull();
     }
 }

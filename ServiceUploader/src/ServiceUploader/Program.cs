@@ -32,7 +32,12 @@ internal class Program
                                                      $"{Modes.Post} - uploads the image file to server.\n" +
                                                      "Options: \n" + 
                                                      "\t-t|--token\n" +
-                                                     "\t--compose-path - path to image.tar file\n";
+                                                     "\t--compose-path - path to image.tar file\n" +
+                                                     $"{Modes.Get} - gets the image file from server if exists.\n" +
+                                                     "Options: \n" + 
+                                                     "\t-t|--token\n" +
+                                                     "\t--image - image tag\n" +
+                                                     "\t--uri - server address\n";
 
     private static string IfNotSpecifiedString(string envKey)
     {
@@ -139,12 +144,44 @@ internal class Program
                             throw new ArgumentException("Value cannot be null or whitespace.", nameof(uri));
                         await Post(uri, token, compose);
                         break;
+                    case Modes.Get:
+                        if (string.IsNullOrWhiteSpace(token))
+                            throw new InvalidOperationException("The token used to start application");
+                        if (string.IsNullOrWhiteSpace(image))
+                            throw new ArgumentException("Value cannot be null or whitespace.", nameof(image));
+                        if (string.IsNullOrWhiteSpace(uri))
+                            throw new ArgumentException("Value cannot be null or whitespace.", nameof(uri));
+                        await GetAsync(uri, image, token);
+                        break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(mode), mode, "Mode parameter out of range");
                 }
             }, modeOption, tokenOption, uriOption, imageTagOption, projectNameOption, serviceNameOption, versionOption,
             dockerComposePath);
         return root.Invoke(args);
+    }
+
+    private static async Task GetAsync(string uri, string imageTag, string token)
+    {
+        var filePath = $"{imageTag.ToHash()}.tar";
+        Console.WriteLine($"Downloading image {imageTag} to {filePath}...");
+        VersioningManagerClient client = new(new Uri(uri), token, TimeSpan.FromMinutes(10.0));
+        await client.DownloadImageAsync(imageTag, filePath, (totalRead, currentSpeed) =>
+        {
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(
+                $"Progress: {FormatBytes(totalRead)} Speed: {currentSpeed:0.00} MB/s");
+        }, (totalBytes, totalSeconds) =>
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.WriteLine($"Downloaded: {FormatBytes(totalBytes)} in " +
+                              $"{totalSeconds:0.00} seconds. " +
+                              $"Avg speed: {totalBytes / (totalSeconds * 1024 * 1024):0.00} MB/s");
+            Console.ResetColor();
+        });
+        Console.WriteLine($"Image saved to {filePath}");
+        Console.WriteLine("Done!");
     }
 
     private static async Task Post(string uri, string token, string file)
@@ -315,7 +352,7 @@ internal class Program
             Console.WriteLine($"Image '{archive}' uploaded successfully.");
         }
 
-        Console.WriteLine("Done!"); //TODO: test it
+        Console.WriteLine("Done!");
     }
 }
 
@@ -324,5 +361,6 @@ internal enum Modes
     Load,
     Save,
     Update,
-    Post
+    Post,
+    Get
 }
